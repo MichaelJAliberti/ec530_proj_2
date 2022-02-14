@@ -12,7 +12,7 @@ def check_mac_format(mac):
 
 
 def read_from_device(file):
-    """ Take in mac_address and readout_value of a given device
+    """Take in mac_address and readout_value of a given device
 
     :param file: path to a given device
     :type file: string
@@ -30,7 +30,7 @@ def read_from_device(file):
 
 
 def retrieve_db_info(mac_address):
-    """ Look up device information given its mac_address
+    """Look up device information given its mac_address
 
     :param mac_address: identifier for device
     :type mac_address: string
