@@ -35,17 +35,19 @@ def check_valid_data(device_data):
         logging.warning(f"Invalid mac address: {device_data['mac']}")
         return False
 
+    return True
 
-def read_from_device(file):
+
+def read_from_device(device):
     """Take in mac_address and readout_value of a given device
 
-    :param file: path to a given device
-    :type file: string
+    :param device: path to file for a given device
+    :type device: string
     ...
     :return: a dictionary of device data, UTC timestamp, and error codes
     :rtype: dictionary
     """
-    with open(file) as f:
+    with open(device) as f:
         device_data = json.load(f)
     if not check_valid_data(device_data):
         return {}
@@ -55,7 +57,7 @@ def read_from_device(file):
     return device_data
 
 
-def retrieve_db_info(mac_address):
+def retrieve_db_data(mac_address):
     """Look up device information given its mac_address
 
     :param mac_address: identifier for device
