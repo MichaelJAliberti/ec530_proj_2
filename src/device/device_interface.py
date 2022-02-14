@@ -9,7 +9,9 @@ data_template = ["mac", "value"]
 
 class DeviceInterface:
     def __init__(self, device):
-        pass
+        self.device_data = self.read_from_device(device)
+        if self.check_data_format(self.device_data):
+            self.device_data.update(self.retrieve_db_data(self.device_data["mac"]))
 
     @classmethod
     def check_mac_format(cls, mac):
@@ -24,7 +26,7 @@ class DeviceInterface:
         return bool(re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
 
     @classmethod
-    def check_valid_data(cls, device_data):
+    def check_data_format(cls, device_data):
         """Take in mac_address, determine if its format is valid
 
         :param device_data: mac address for a device
@@ -34,7 +36,7 @@ class DeviceInterface:
         :rtype: bool
         """
         if not all([data_type in device_data for data_type in data_template]):
-            logging.warning("Insufficient data fields")
+            logging.warning("Missing data fields")
             return False
         if not cls.check_mac_format(device_data["mac"]):
             logging.warning(f"Invalid mac address: {device_data['mac']}")
@@ -54,8 +56,6 @@ class DeviceInterface:
         """
         with open(device) as f:
             device_data = json.load(f)
-        if not cls.check_valid_data(device_data):
-            return {}
         cls.trim_data(device_data)
         device_data["timestamp"] = datetime.now(timezone.utc)
 
@@ -71,7 +71,7 @@ class DeviceInterface:
         :return: a dictionary of device information
         :rtype: dict
         """
-        pass
+        return {}
 
     @classmethod
     def trim_data(cls, device_data):
@@ -85,5 +85,5 @@ class DeviceInterface:
 
 
 if __name__ == "__main__":
-    data = DeviceInterface.read_from_device("data/device.json")
+    data = DeviceInterface("data/device.json").device_data
     print(data)
