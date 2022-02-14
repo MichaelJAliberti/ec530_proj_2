@@ -22,7 +22,7 @@ class DeviceInterface:
         """Take in mac_address, determine if its format is valid
 
         :param device_data: mac address for a device
-        :type device_data: dictionary
+        :type device_data: dict
         ...
         :return: true if valid, false if not
         :rtype: bool
@@ -37,16 +37,24 @@ class DeviceInterface:
         return True
 
     @classmethod
-    def check_file(cls, infile):
-        if exists(infile):
-            file_type = infile.split(".")[-1]
+    def check_file(cls, file_path):
+        """Take in file path, determine if file exists and is json
+
+        :param file_path: path to a file
+        :type file_path: string
+        ...
+        :return: true if valid, false if not
+        :rtype: bool
+        """
+        if exists(file_path):
+            file_type = file_path.split(".")[-1]
             if file_type == "json":
-                return file_type
+                return True
             else:
-                logging.warning(f"{infile} is not a json file")
+                logging.warning(f"{file_path} is not a json file")
                 return False
         else:
-            logging.warning(f"{infile} does not exist")
+            logging.warning(f"{file_path} does not exist")
             return False
 
     @classmethod
@@ -69,7 +77,7 @@ class DeviceInterface:
         :type device: string
         ...
         :return: a dictionary of device data, UTC timestamp, and error codes
-        :rtype: dictionary
+        :rtype: dict
         """
         with open(device) as f:
             device_data = json.load(f)
