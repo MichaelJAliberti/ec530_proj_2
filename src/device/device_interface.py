@@ -69,7 +69,7 @@ class DeviceInterface:
         :type mac_address: string
         ...
         :return: a dictionary of device information
-        :rtype: dictionary
+        :rtype: dict
         """
         pass
 
@@ -77,8 +77,8 @@ class DeviceInterface:
     def trim_data(cls, device_data):
         """Removes unnecessary data from device stream
 
-        :param mac_address: identifier for device
-        :type mac_address: string
+        :param device_data: data from device
+        :type device_data: dict
         """
         excess_keys = [key for key in device_data if key not in data_template]
         [device_data.pop(field) for field in excess_keys]
