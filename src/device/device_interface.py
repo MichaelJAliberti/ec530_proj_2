@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
 import json
+import logging
+import re
 
 
 data_template = ["mac", "value"]
 
 
 def check_mac_format(mac):
-    pass
+    return re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac)
 
 
 def read_from_device(file):
@@ -18,11 +20,10 @@ def read_from_device(file):
     :return: a dictionary of device data, UTC timestamp, and error codes
     :rtype: dictionary
     """
-
     with open(file) as f:
         device_data = json.load(f)
-    if check_mac_format(device_data["mac"]):
-        pass
+    if not check_mac_format(device_data["mac"]):
+        logging.warning(f"Invalid mac address: {device_data['mac']}")
     device_data["timestamp"] = datetime.now(timezone.utc)
 
     return device_data
