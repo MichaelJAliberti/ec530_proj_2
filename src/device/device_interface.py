@@ -1,10 +1,31 @@
-def read_from_device():
+from datetime import datetime, timezone
+import json
+
+
+data_template = ["mac", "value"]
+
+
+def check_mac_format(mac):
+    pass
+
+
+def read_from_device(file):
     """ Take in mac_address and readout_value of a given device
 
-    :return: a dictionary of device data, timestamp, and error codes
+    :param file: path to a given device
+    :type file: string
+    ...
+    :return: a dictionary of device data, UTC timestamp, and error codes
     :rtype: dictionary
     """
-    pass
+
+    with open(file) as f:
+        device_data = json.load(f)
+    if check_mac_format(device_data["mac"]):
+        pass
+    device_data["timestamp"] = datetime.now(timezone.utc)
+
+    return device_data
 
 
 def retrieve_db_info(mac_address):
@@ -17,3 +38,8 @@ def retrieve_db_info(mac_address):
     :rtype: dictionary
     """
     pass
+
+
+if __name__ == "__main__":
+    data = read_from_device("data/device.json")
+    print(data)
