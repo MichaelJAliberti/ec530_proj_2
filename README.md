@@ -1,5 +1,13 @@
 # ec530_proj_2
 
+## Branching Strategy
+
+All branches created should correspond to and fulfill the requirements of a specific Github Issue. 
+Issues should identify a feature to add or a bug to be resolved.
+
+Before merging to main, a branch must include the implementation of the desired feature as well as a corresponding test.
+If a branch includes modifications to code in the `/src` directory, these changes should be documented in `changelog.md`
+
 ## API Schema
 
 *User Tables:*
