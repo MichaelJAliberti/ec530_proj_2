@@ -14,18 +14,6 @@ class DeviceInterface:
             self.device_data.update(self.retrieve_db_data(self.device_data["mac"]))
 
     @classmethod
-    def check_mac_format(cls, mac):
-        """Take in mac_address, determine if its format is valid
-
-        :param mac: mac address for a device
-        :type mac: string
-        ...
-        :return: true if valid, false if not
-        :rtype: bool
-        """
-        return bool(re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
-
-    @classmethod
     def check_data_format(cls, device_data):
         """Take in mac_address, determine if its format is valid
 
@@ -43,6 +31,18 @@ class DeviceInterface:
             return False
 
         return True
+
+    @classmethod
+    def check_mac_format(cls, mac):
+        """Take in mac_address, determine if its format is valid
+
+        :param mac: mac address for a device
+        :type mac: string
+        ...
+        :return: true if valid, false if not
+        :rtype: bool
+        """
+        return bool(re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
 
     @classmethod
     def read_from_device(cls, device):
