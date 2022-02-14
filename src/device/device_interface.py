@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from os.path import exists
 import json
 import logging
 import re
@@ -9,9 +10,12 @@ data_template = ["mac", "value"]
 
 class DeviceInterface:
     def __init__(self, device):
-        self.device_data = self.read_from_device(device)
-        if self.check_data_format(self.device_data):
-            self.device_data.update(self.retrieve_db_data(self.device_data["mac"]))
+        if self.check_file(device):
+            self.device_data = self.read_from_device(device)
+            if self.check_data_format(self.device_data):
+                self.device_data.update(self.retrieve_db_data(self.device_data["mac"]))
+        else:
+            self.device_data = {}
 
     @classmethod
     def check_data_format(cls, device_data):
@@ -31,6 +35,19 @@ class DeviceInterface:
             return False
 
         return True
+
+    @classmethod
+    def check_file(cls, infile):
+        if exists(infile):
+            file_type = infile.split(".")[-1]
+            if file_type == "json":
+                return file_type
+            else:
+                logging.warning(f"{infile} is not a json file")
+                return False
+        else:
+            logging.warning(f"{infile} does not exist")
+            return False
 
     @classmethod
     def check_mac_format(cls, mac):
