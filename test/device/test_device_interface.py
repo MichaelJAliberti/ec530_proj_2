@@ -8,32 +8,19 @@ from src.device.device_interface import DeviceInterface
     "device_data, expected",
     [
         [
-            {
-                "mac": "aB-cD-eF-01-23-45",
-                "value": 145,
-                "timestamp": "",
-                "excess": 120
-            },
+            {"mac": "aB-cD-eF-01-23-45", "value": 145, "timestamp": "", "excess": 120},
             True,
         ],
         [
-            {
-                "mac": "ff-ff-ff-ff-ff-ff",
-                "value": 145,
-                "timestamp": ""
-            },
+            {"mac": "ff-ff-ff-ff-ff-ff", "value": 145, "timestamp": ""},
             True,
         ],
         [
-            {
-                "mac": "ff-ff-ff-ff-ff-ff"
-            },
+            {"mac": "ff-ff-ff-ff-ff-ff"},
             False,
         ],
         [
-            {
-                "excess": 0
-            },
+            {"excess": 0},
             False,
         ],
     ],
@@ -91,16 +78,13 @@ def test_check_file(file_path, expected):
 def test_check_mac_format(mac, expected):
     assert DeviceInterface.check_mac_format(mac) == expected
 
+
 @pytest.mark.parametrize(
     "file_path, expected",
     [
         [
             "data/device/device_in_1.json",
-            {
-               "mac": "ff-ff-ff-ff-ff-ff",
-               "value": 145,
-               "excess": 120
-            },
+            {"mac": "ff-ff-ff-ff-ff-ff", "value": 145, "excess": 120},
         ],
     ],
 )
@@ -124,12 +108,12 @@ def test_retrieve_db_data():
             {
                 "mac": "aB-cD-eF-01-23-45",
                 "value": 145,
-                "timestamp": datetime(2022, 2, 14)
+                "timestamp": datetime(2022, 2, 14),
             },
             {
                 "mac": "aB-cD-eF-01-23-45",
                 "value": 145,
-                "timestamp": datetime(2022, 2, 14)
+                "timestamp": datetime(2022, 2, 14),
             },
         ],
         [
