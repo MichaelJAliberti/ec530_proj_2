@@ -1,17 +1,19 @@
-from datetime import datetime, timezone
-from os.path import exists
 import json
 import logging
 import re
 
+from datetime import datetime, timezone
+from os.path import exists
 
-data_template = ["mac", "value"]
+
+data_template = ["mac", "timestamp", "value"]
 
 
 class DeviceInterface:
     def __init__(self, device):
         if self.check_file(device):
             self.device_data = self.read_from_device(device)
+            self.trim_data(self.device_data)
             if self.check_data_format(self.device_data):
                 self.device_data.update(self.retrieve_db_data(self.device_data["mac"]))
         else:
@@ -67,6 +69,8 @@ class DeviceInterface:
         :return: true if valid, false if not
         :rtype: bool
         """
+        if not isinstance(mac, str):
+            return False
         return bool(re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
 
     @classmethod
@@ -81,7 +85,6 @@ class DeviceInterface:
         """
         with open(device) as f:
             device_data = json.load(f)
-        cls.trim_data(device_data)
         device_data["timestamp"] = datetime.now(timezone.utc)
 
         return device_data
@@ -110,5 +113,5 @@ class DeviceInterface:
 
 
 if __name__ == "__main__":
-    data = DeviceInterface("data/device.json").device_data
+    data = DeviceInterface("data/device/device_in_1.json").device_data
     print(data)
