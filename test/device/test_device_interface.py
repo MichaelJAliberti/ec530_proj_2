@@ -1,5 +1,6 @@
 import pytest
 
+from datetime import datetime
 from src.device.device_interface import DeviceInterface
 
 
@@ -90,10 +91,25 @@ def test_check_file(file_path, expected):
 def test_check_mac_format(mac, expected):
     assert DeviceInterface.check_mac_format(mac) == expected
 
-
-def test_read_from_device():
-    DeviceInterface("data/device.json")
-    assert True
+@pytest.mark.parametrize(
+    "file_path, expected",
+    [
+        [
+            "data/device/device_in_1.json",
+            {
+               "mac": "ff-ff-ff-ff-ff-ff",
+               "value": 145,
+               "excess": 120
+            },
+        ],
+    ],
+)
+def test_read_from_device(file_path, expected):
+    # can't check datetime.now() directly
+    data = DeviceInterface.read_from_device(file_path)
+    assert isinstance(data["timestamp"], datetime)
+    data.pop("timestamp")
+    assert data == expected
 
 
 def test_retrieve_db_data():
@@ -101,6 +117,36 @@ def test_retrieve_db_data():
     assert True
 
 
-def test_trim_data():
-    DeviceInterface("data/device.json")
-    assert True
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        [
+            {
+                "mac": "aB-cD-eF-01-23-45",
+                "value": 145,
+                "timestamp": datetime(2022, 2, 14)
+            },
+            {
+                "mac": "aB-cD-eF-01-23-45",
+                "value": 145,
+                "timestamp": datetime(2022, 2, 14)
+            },
+        ],
+        [
+            {
+                "mac": "ff-ff-ff-ff-ff-ff",
+                "excess": 120,
+                "excess2": 121,
+                "excess3": 122,
+                "excess4": 123,
+                "excess5": 124,
+            },
+            {
+                "mac": "ff-ff-ff-ff-ff-ff",
+            },
+        ],
+    ],
+)
+def test_trim_data(data, expected):
+    DeviceInterface.trim_data(data)
+    assert data == expected
