@@ -8,7 +8,12 @@ from src.device.device_interface import DeviceInterface
     "device_data, expected",
     [
         [
-            {"mac": "aB-cD-eF-01-23-45", "value": 145, "timestamp": "", "excess": 120},
+            {
+                "mac": "aB-cD-eF-01-23-45",
+                "value": 145,
+                "timestamp": "",
+                "excess": 120,
+            },
             True,
         ],
         [
@@ -27,27 +32,6 @@ from src.device.device_interface import DeviceInterface
 )
 def test_check_data_format(device_data, expected):
     assert DeviceInterface.check_data_format(device_data) == expected
-
-
-@pytest.mark.parametrize(
-    "file_path, expected",
-    [
-        [
-            "data/device/device_in_1.json",
-            True,
-        ],
-        [
-            "data/device/device_in_2.txt",
-            False,
-        ],
-        [
-            "data/device/no_file.json",
-            False,
-        ],
-    ],
-)
-def test_check_file(file_path, expected):
-    assert DeviceInterface.check_file(file_path) == expected
 
 
 @pytest.mark.parametrize(
