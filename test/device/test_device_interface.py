@@ -8,7 +8,12 @@ from src.device.device_interface import DeviceInterface
     "device_data, expected",
     [
         [
-            {"mac": "aB-cD-eF-01-23-45", "value": 145, "time_received": "", "excess": 120},
+            {
+                "mac": "aB-cD-eF-01-23-45",
+                "value": 145,
+                "time_received": "",
+                "excess": 120,
+            },
             True,
         ],
         [
