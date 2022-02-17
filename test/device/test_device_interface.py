@@ -11,13 +11,13 @@ from src.device.device_interface import DeviceInterface
             {
                 "mac": "aB-cD-eF-01-23-45",
                 "value": 145,
-                "time_received": "",
+                "timestamp": "",
                 "excess": 120,
             },
             True,
         ],
         [
-            {"mac": "ff-ff-ff-ff-ff-ff", "value": 145, "time_received": ""},
+            {"mac": "ff-ff-ff-ff-ff-ff", "value": 145, "timestamp": ""},
             True,
         ],
         [
@@ -75,8 +75,8 @@ def test_check_mac_format(mac, expected):
 def test_read_from_device(file_path, expected):
     # can't check datetime.now() directly
     data = DeviceInterface.read_from_device(file_path)
-    assert isinstance(data["time_received"], datetime)
-    data.pop("time_received")
+    assert isinstance(data["timestamp"], datetime)
+    data.pop("timestamp")
     assert data == expected
 
 
@@ -92,12 +92,12 @@ def test_retrieve_db_data():
             {
                 "mac": "aB-cD-eF-01-23-45",
                 "value": 145,
-                "time_received": datetime(2022, 2, 14),
+                "timestamp": datetime(2022, 2, 14),
             },
             {
                 "mac": "aB-cD-eF-01-23-45",
                 "value": 145,
-                "time_received": datetime(2022, 2, 14),
+                "timestamp": datetime(2022, 2, 14),
             },
         ],
         [
