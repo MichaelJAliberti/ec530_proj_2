@@ -8,11 +8,11 @@ from src.device.device_interface import DeviceInterface
     "device_data, expected",
     [
         [
-            {"mac": "aB-cD-eF-01-23-45", "value": 145, "timestamp": "", "excess": 120},
+            {"mac": "aB-cD-eF-01-23-45", "value": 145, "time_received": "", "excess": 120},
             True,
         ],
         [
-            {"mac": "ff-ff-ff-ff-ff-ff", "value": 145, "timestamp": ""},
+            {"mac": "ff-ff-ff-ff-ff-ff", "value": 145, "time_received": ""},
             True,
         ],
         [
@@ -27,27 +27,6 @@ from src.device.device_interface import DeviceInterface
 )
 def test_check_data_format(device_data, expected):
     assert DeviceInterface.check_data_format(device_data) == expected
-
-
-@pytest.mark.parametrize(
-    "file_path, expected",
-    [
-        [
-            "data/device/device_in_1.json",
-            True,
-        ],
-        [
-            "data/device/device_in_2.txt",
-            False,
-        ],
-        [
-            "data/device/no_file.json",
-            False,
-        ],
-    ],
-)
-def test_check_file(file_path, expected):
-    assert DeviceInterface.check_file(file_path) == expected
 
 
 @pytest.mark.parametrize(
@@ -91,8 +70,8 @@ def test_check_mac_format(mac, expected):
 def test_read_from_device(file_path, expected):
     # can't check datetime.now() directly
     data = DeviceInterface.read_from_device(file_path)
-    assert isinstance(data["timestamp"], datetime)
-    data.pop("timestamp")
+    assert isinstance(data["time_received"], datetime)
+    data.pop("time_received")
     assert data == expected
 
 
@@ -108,12 +87,12 @@ def test_retrieve_db_data():
             {
                 "mac": "aB-cD-eF-01-23-45",
                 "value": 145,
-                "timestamp": datetime(2022, 2, 14),
+                "time_received": datetime(2022, 2, 14),
             },
             {
                 "mac": "aB-cD-eF-01-23-45",
                 "value": 145,
-                "timestamp": datetime(2022, 2, 14),
+                "time_received": datetime(2022, 2, 14),
             },
         ],
         [
