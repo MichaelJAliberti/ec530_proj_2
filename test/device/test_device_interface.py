@@ -31,7 +31,9 @@ from src.device.device_interface import DeviceInterface
     ],
 )
 def test_check_data_format(device_data, expected):
-    assert DeviceInterface.check_data_format(device_data) == expected
+    device = DeviceInterface()
+    device.device_data = device_data
+    assert device.check_data_format() == expected
 
 
 @pytest.mark.parametrize(
@@ -60,7 +62,9 @@ def test_check_data_format(device_data, expected):
     ],
 )
 def test_check_mac_format(mac, expected):
-    assert DeviceInterface.check_mac_format(mac) == expected
+    device = DeviceInterface()
+    device.device_data["mac"] = mac
+    assert device._check_data_mac_format() == expected
 
 
 @pytest.mark.parametrize(
