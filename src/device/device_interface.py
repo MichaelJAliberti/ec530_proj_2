@@ -10,49 +10,81 @@ logger = logging.getLogger(__name__)
 
 class DeviceInterface:
     def __init__(self):
-        self.require_fields = ["mac", "timestamp", "value"]
+        self.required_fields = ["mac", "type", "value", "time_received"]
         self.device_data = {}
 
-    def check_data_format(self):
+    @classmethod
+    def create_from_data(cls, data):
+        """Creates a DeviceInterface object from a given set of data and
+            verifies the integrity of said data
+
+        :param data: information from a device
+        :type data: dict
+        ...
+        :return: a DeviceInterface built with input data
+        :rtype: DeviceInterface
+        """
+        interface = DeviceInterface()
+        interface._read_device_data(device=data)
+        interface._check_data()
+
+        return interface
+
+    @classmethod
+    def fully_augmented(cls, data):
+        """Creates a DeviceInterface object from a given set of data,
+            verifies the integrity of said data, and augments data
+
+        :param data: information from a device
+        :type data: dict
+        ...
+        :return: a DeviceInterface built with input data
+        :rtype: DeviceInterface
+        """
+        interface = DeviceInterface()
+        interface._read_device_data(device=data)
+        interface._check_data()
+        interface._trim_data()
+        interface._retrieve_db_data()
+
+        return interface
+
+    def _check_data(self):
         """Check if stored device_data has valid format
 
-        :return: true if valid, false if not
-        :rtype: bool
+        :raise: ValueError
         """
-        return self._check_data_fields() and self._check_data_mac_format()
+        self._check_data_fields()
+        self._check_data_mac()
 
     def _check_data_fields(self):
         """Determine if data has all required fields
 
-        :return: true if valid, false if not
-        :rtype: bool
+        :raise: ValueError if any missing fields
         """
         missing_fields = []
         [
             missing_fields.append(key)
-            for key in self.data_template
+            for key in self.required_fields
             if key not in self.device_data
         ]
-        if not missing_fields:
-            return True
-        else:
-            logger.warning(f"Missing required fields: {missing_fields.join(', ')}")
-            return False
+        if missing_fields:
+            error_msg = f"Missing required fields: {', '.join(missing_fields)}"
+            logger.warning(error_msg)
+            raise ValueError(error_msg)
 
-    def _check_data_mac_format(self):
+    def _check_data_mac(self):
         """Checks mac address in device_data, determine if format is valid
 
-        :return: true if valid, false if not
-        :rtype: bool
+        :raise: ValueError if mac address is invalid
         """
         mac = self.device_data.get("mac")
-        if isinstance(mac, str) and bool(
+        if not isinstance(mac, str) or not bool(
             re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac)
         ):
-            return True
-        else:
-            logger.warning(f"Invalid mac address: {self.device_data['mac']}")
-            return False
+            error_msg = f"Invalid mac address: {self.device_data['mac']}"
+            logger.warning(error_msg)
+            raise ValueError(error_msg)
 
     def _read_device_data(self, device):
         """Read and store all data from a given device and timestamp recording
@@ -73,7 +105,9 @@ class DeviceInterface:
 
     def _trim_data(self):
         """Removes unexpected data from device stream"""
-        excess_keys = [key for key in self.device_data if key not in self.data_template]
+        excess_keys = [
+            key for key in self.device_data if key not in self.required_fields
+        ]
         [self.device_data.pop(field) for field in excess_keys]
 
 
