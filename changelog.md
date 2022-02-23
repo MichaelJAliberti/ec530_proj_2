@@ -1,5 +1,20 @@
 # Changelog
 
+## [2021.2.22]
+
+### Added
+
+- passthroughs `create_from_data` and `fully_augmented` allow creation of variably populated `DeviceInterface` instances
+- factory `get_device_reader`, `_read_from_file`, and `_read_from_dict` allow flexibility of input types
+
+### Changed
+
+- all functions converted from classmethods to internal methods
+- `__init__` function changed to a bare-bones passthrough
+- `check_data_format` renamed to `_check_data`, split into `_check_data_fields` and `check_data_mac`
+- `_check` methods now throw exceptions instead of returning booleans
+- `read_from_device` renamed to `_read_device_data`, now calls on reading factory methods
+
 ## [2021.2.17]
 
 ### Added
