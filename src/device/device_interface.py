@@ -112,6 +112,11 @@ class DeviceInterface:
 
 
 def get_device_reader(device):
+    """Factory function to read device data from different input types
+
+    :param device: input data from some device
+    :type device: str or dict
+    """
     if isinstance(device, str):
         return _read_from_file
     elif isinstance(device, dict):
@@ -122,10 +127,20 @@ def get_device_reader(device):
 
 
 def _read_from_file(device):
+    """Read device data from a json file
+
+    :param device: path to a json file
+    :type device: str
+    """
     if check_file(device, "json"):
         with open(device) as f:
             return json.load(f)
 
 
 def _read_from_dict(device):
+    """Ingest device data from a dictionary
+
+    :param device: dictionary of device data
+    :type device: dict
+    """
     return device
