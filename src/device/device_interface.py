@@ -3,115 +3,144 @@ import logging
 import re
 
 from datetime import datetime, timezone
-from os.path import exists
+from src.utils.file import check_file
 
-
-data_template = ["mac", "timestamp", "value"]
+logger = logging.getLogger(__name__)
 
 
 class DeviceInterface:
-    def __init__(self, device):
-        if self.check_file(device):
-            self.device_data = self.read_from_device(device)
-            self.trim_data(self.device_data)
-            if self.check_data_format(self.device_data):
-                self.device_data.update(self.retrieve_db_data(self.device_data["mac"]))
-        else:
-            self.device_data = {}
+    def __init__(self):
+        self.required_fields = ["mac", "type", "value", "time_received"]
+        self.device_data = {}
 
     @classmethod
-    def check_data_format(cls, device_data):
-        """Take in mac_address, determine if its format is valid
+    def create_from_data(cls, data):
+        """Creates a DeviceInterface object from a given set of data and
+            verifies the integrity of said data
 
-        :param device_data: mac address for a device
-        :type device_data: dict
+        :param data: information from a device
+        :type data: dict
         ...
-        :return: true if valid, false if not
-        :rtype: bool
+        :return: a DeviceInterface built with input data
+        :rtype: DeviceInterface
         """
-        if not all([data_type in device_data for data_type in data_template]):
-            logging.warning("Missing data fields")
-            return False
-        if not cls.check_mac_format(device_data["mac"]):
-            logging.warning(f"Invalid mac address: {device_data['mac']}")
-            return False
+        interface = DeviceInterface()
+        interface._read_device_data(device=data)
+        interface._check_data()
 
-        return True
+        return interface
 
     @classmethod
-    def check_file(cls, file_path):
-        """Take in file path, determine if file exists and is json
+    def fully_augmented(cls, data):
+        """Creates a DeviceInterface object from a given set of data,
+            verifies the integrity of said data, and augments data
 
-        :param file_path: path to a file
-        :type file_path: string
+        :param data: information from a device
+        :type data: dict
         ...
-        :return: true if valid, false if not
-        :rtype: bool
+        :return: a DeviceInterface built with input data
+        :rtype: DeviceInterface
         """
-        if exists(file_path):
-            file_type = file_path.split(".")[-1]
-            if file_type == "json":
-                return True
-            else:
-                logging.warning(f"{file_path} is not a json file")
-                return False
-        else:
-            logging.warning(f"{file_path} does not exist")
-            return False
+        interface = DeviceInterface()
+        interface._read_device_data(device=data)
+        interface._check_data()
+        interface._trim_data()
+        interface._retrieve_db_data()
 
-    @classmethod
-    def check_mac_format(cls, mac):
-        """Take in mac_address, determine if its format is valid
+        return interface
 
-        :param mac: mac address for a device
-        :type mac: string
-        ...
-        :return: true if valid, false if not
-        :rtype: bool
+    def _check_data(self):
+        """Check if stored device_data has valid format
+
+        :raise: ValueError
         """
-        if not isinstance(mac, str):
-            return False
-        return bool(re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
+        self._check_data_fields()
+        self._check_data_mac()
 
-    @classmethod
-    def read_from_device(cls, device):
-        """Take in mac_address and readout_value of a given device
+    def _check_data_fields(self):
+        """Determine if data has all required fields
 
-        :param device: path to file for a given device
-        :type device: string
-        ...
-        :return: a dictionary of device data, UTC timestamp, and error codes
-        :rtype: dict
+        :raise: ValueError if any missing fields
         """
+        missing_fields = []
+        [
+            missing_fields.append(key)
+            for key in self.required_fields
+            if key not in self.device_data
+        ]
+        if missing_fields:
+            error_msg = f"Missing required fields: {', '.join(missing_fields)}"
+            logger.warning(error_msg)
+            raise ValueError(error_msg)
+
+    def _check_data_mac(self):
+        """Checks mac address in device_data, determine if format is valid
+
+        :raise: ValueError if mac address is invalid
+        """
+        mac = self.device_data.get("mac")
+        if not isinstance(mac, str) or not bool(
+            re.match("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac)
+        ):
+            error_msg = f"Invalid mac address: {self.device_data['mac']}"
+            logger.warning(error_msg)
+            raise ValueError(error_msg)
+
+    def _read_device_data(self, device):
+        """Read and store all data from a given device and timestamp recording
+
+        :param device: path to json file or dictionary containing device info
+        :type device: string or dict
+        """
+        reader = get_device_reader(device)
+        self.device_data = reader(device)
+        self.device_data["time_received"] = datetime.now(timezone.utc)
+
+    def _retrieve_db_data(self):
+        """Look up device information in database using mac_address and add data to
+        device_data
+        """
+        if self.check_data_format():
+            self.device_data.update({})
+
+    def _trim_data(self):
+        """Removes unexpected data from device stream"""
+        excess_keys = [
+            key for key in self.device_data if key not in self.required_fields
+        ]
+        [self.device_data.pop(field) for field in excess_keys]
+
+
+def get_device_reader(device):
+    """Factory function to read device data from different input types
+
+    :param device: input data from some device
+    :type device: str or dict
+    """
+    if isinstance(device, str):
+        return _read_from_file
+    elif isinstance(device, dict):
+        return _read_from_dict
+    else:
+        logger.error(f"Invalid device type {type(device)}, reader failed")
+        raise ValueError(device)
+
+
+def _read_from_file(device):
+    """Read device data from a json file
+
+    :param device: path to a json file
+    :type device: str
+    """
+    if check_file(device, "json"):
         with open(device) as f:
-            device_data = json.load(f)
-        device_data["timestamp"] = datetime.now(timezone.utc)
-
-        return device_data
-
-    @classmethod
-    def retrieve_db_data(cls, mac_address):
-        """Look up device information given its mac_address
-
-        :param mac_address: identifier for device
-        :type mac_address: string
-        ...
-        :return: a dictionary of device information
-        :rtype: dict
-        """
-        return {}
-
-    @classmethod
-    def trim_data(cls, device_data):
-        """Removes unnecessary data from device stream
-
-        :param device_data: data from device
-        :type device_data: dict
-        """
-        excess_keys = [key for key in device_data if key not in data_template]
-        [device_data.pop(field) for field in excess_keys]
+            return json.load(f)
 
 
-if __name__ == "__main__":
-    data = DeviceInterface("data/device/device_in_1.json").device_data
-    print(data)
+def _read_from_dict(device):
+    """Ingest device data from a dictionary
+
+    :param device: dictionary of device data
+    :type device: dict
+    """
+    return device
