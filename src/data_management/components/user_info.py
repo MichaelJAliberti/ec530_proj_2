@@ -3,7 +3,7 @@ from flask_restful import reqparse, abort, Resource, fields, marshal_with
 
 USER_DATA = {
     "0": {
-        "UserID": 0,
+        "UserID": "0",
         "FullName": "John Doe",
         "Email": "example@example.com",
         "DoB": "1/1/2000",
@@ -33,31 +33,24 @@ fields = {
     "InsuranceGroupID": fields.String,
 }
 
-parser = reqparse.RequestParser()
-parser.add_argument("FullName", required=True, help="FullName cannot be blank.")
-parser.add_argument("Email", required=True, help="Email cannot be blank.")
-parser.add_argument("DoB", required=False)
-parser.add_argument("Gender", required=False)
-parser.add_argument("Weight", required=False)
-parser.add_argument("Height", required=False)
-parser.add_argument("PrimaryContact", required=False)
-parser.add_argument("SecondaryContact", required=False)
-parser.add_argument("Address", required=False)
-parser.add_argument("Insurance", required=False)
-parser.add_argument("InsuranceGroupID", required=False)
+base_parser = reqparse.RequestParser()
+base_parser.add_argument("DoB", type=str, required=False)
+base_parser.add_argument("Gender", type=str, required=False)
+base_parser.add_argument("Weight", type=float, required=False)
+base_parser.add_argument("Height", type=float, required=False)
+base_parser.add_argument("PrimaryContact", type=str, required=False)
+base_parser.add_argument("SecondaryContact", type=str, required=False)
+base_parser.add_argument("Address", type=str, required=False)
+base_parser.add_argument("Insurance", type=str, required=False)
+base_parser.add_argument("InsuranceGroupID", type=str, required=False)
 
-put_parser = reqparse.RequestParser()
-put_parser.add_argument("FullName", required=False)
-put_parser.add_argument("Email", required=False)
-put_parser.add_argument("DoB", required=False)
-put_parser.add_argument("Gender", required=False)
-put_parser.add_argument("Weight", required=False)
-put_parser.add_argument("Height", required=False)
-put_parser.add_argument("PrimaryContact", required=False)
-put_parser.add_argument("SecondaryContact", required=False)
-put_parser.add_argument("Address", required=False)
-put_parser.add_argument("Insurance", required=False)
-put_parser.add_argument("InsuranceGroupID", required=False)
+parser = base_parser.copy()
+parser.add_argument("FullName", type=str, required=True, help="FullName cannot be blank.")
+parser.add_argument("Email", type=str, required=True, help="Email cannot be blank.")
+
+put_parser = base_parser.copy()
+put_parser.add_argument("FullName", type=str, required=False)
+put_parser.add_argument("Email", type=str, required=False)
 
 
 def abort_if_does_not_exist(id, data):
