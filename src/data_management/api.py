@@ -16,8 +16,10 @@ class RESTService:
 
     def _add_resources(self):
         for component in self.components:
-            for name, resource in zip(component["sub_urls"], component["resources"]):
-                self.api.add_resource(resource, name)
+            for resource_info in component:
+                self.api.add_resource(
+                    resource_info["resource"], resource_info["sub_url"]
+                )
 
 
 if __name__ == "__main__":
