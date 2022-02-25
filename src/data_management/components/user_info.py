@@ -44,9 +44,9 @@ base_parser.add_argument("Address", type=str, required=False)
 base_parser.add_argument("Insurance", type=str, required=False)
 base_parser.add_argument("InsuranceGroupID", type=str, required=False)
 
-parser = base_parser.copy()
-parser.add_argument("FullName", type=str, required=True, help="FullName cannot be blank.")
-parser.add_argument("Email", type=str, required=True, help="Email cannot be blank.")
+post_parser = base_parser.copy()
+post_parser.add_argument("FullName", type=str, required=True, help="FullName cannot be blank.")
+post_parser.add_argument("Email", type=str, required=True, help="Email cannot be blank.")
 
 put_parser = base_parser.copy()
 put_parser.add_argument("FullName", type=str, required=False)
@@ -81,7 +81,7 @@ class UserList(Resource):
         return USER_DATA
 
     def post(self):
-        args = parser.parse_args()
+        args = post_parser.parse_args()
         id = str(int(max(USER_DATA.keys())) + 1)
         USER_DATA[id] = {"UserID": id}
         for field in args.keys():
