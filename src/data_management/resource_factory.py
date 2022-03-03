@@ -6,6 +6,8 @@ from flask_restful import reqparse, abort, Resource, fields, marshal_with
 #     list: fields.List,
 # }
 
+# add_arguments has kwarg input for input parameters!
+
 USER_INFO = {}
 
 
@@ -19,12 +21,11 @@ def abort_if_operation_unsupported(operation):
 
 
 class ResourceElement(Resource):
-    def __init__(self, *, url, get, delete, put, post):
-        self.url = url
-        self.get = get
-        self.delete = delete
-        self.put = put
-        self.post = post
+    def __init__(self, **kwargs):
+        self.get = kwargs["get"]
+        self.delete = kwargs["delete"]
+        self.put = kwargs["put"]
+        self.post = kwargs["post"]
 
     def get(self, id):
         return self.get(id)
@@ -93,7 +94,7 @@ def _make_outer_resource(*, name, data, post_parser):
             data[id][field] = args[field]
         return data[id], 201
 
-    return ResourceElement(url=f"/{name}", get=get, delete=delete, put=put, post=post)
+    return {"get": get, "delete": delete, "put": put, "post": post, "url": f"/{name}"}
 
 
 def _make_inner_resource(*, name, data, put_parser):
