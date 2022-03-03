@@ -1,99 +1,100 @@
 from flask_restful import reqparse, abort, Resource, fields, marshal_with
 
-field_type_map = {
-    int: fields.Integer,
-    str: fields.String,
-    list: fields.List,
-}
+# field_type_map = {
+#     int: fields.Integer,
+#     str: fields.String,
+#     list: fields.List,
+# }
+
+USER_INFO = {}
 
 
-class ResourceField(Resource):
-    def __init__(self, data):
-        self.data = data
+def abort_if_does_not_exist(id, data):
+    if id not in data:
+        abort(404, message=f"Element {id} doesn't exist.")
 
-    def get(self, id):
-        abort_if_does_not_exist(id, self.data)
-        return self.data[id]
 
-    def put(self, id):
-        abort_if_does_not_exist(id, self.data)
-        args = put_parser.parse_args()
-        for field in args.keys():
-            self.data[id][field] = args[field]
-        return self.data[id], 201
+def abort_if_operation_unsupported(operation):
+    abort(405, message=f"{operation.upper()} not supported for this resource.")
 
 
 class ResourceElement(Resource):
-    def __init__(self, data, put_parser):
-        self.data = data
-
-    def delete(self, id):
-        abort_if_does_not_exist(id, self.data)
-        del self.data[id]
-        return "", 204
+    def __init__(self, *, url, get, delete, put, post):
+        self.url = url
+        self.get = get
+        self.delete = delete
+        self.put = put
+        self.post = post
 
     def get(self, id):
-        abort_if_does_not_exist(id, self.data)
-        return self.data[id]
+        return self.get(id)
+
+    def delete(self, id):
+        return self.delete(id)
 
     def put(self, id):
-        abort_if_does_not_exist(id, self.data)
-        args = put_parser.parse_args()
-        for field in args.keys():
-            self.data[id][field] = args[field]
-        return self.data[id], 201
-
-
-class ResourceList(Resource):
-    def __init__(self, data, post_parser):
-        self.data = data
-
-    def get(self):
-        return self.data
+        return self.put(id)
 
     def post(self):
-        args = post_parser.parse_args()
-        id = str(int(max(self.data.keys())) + 1)
-        self.data[id] = {"UserID": id}
-        for field in args.keys():
-            self.data[id][field] = args[field]
-        return self.data[id], 201
+        return self.post()
 
 
 class ResourceFactory:
-    def __init__(self):
-        pass
-
     @classmethod
-    def set_parsers(cls, *, example, required_post_fields=None, required_put_fields=None):
-        base_parser = reqparse.RequestParser()
-        for field, value in example.items():
-            base_parser.add_argument(field, type=type(value))
+    def make_resources(cls, *, name, sample, required_fields=[]):
+        data = {}
+        resources = []
 
-        put_parser = base_parser.copy()
-        post_parser = base_parser.copy()
+        type_map = _get_type_map(sample=sample)
+        put_parser, post_parser = _get_parsers(sample=sample, required_fields=required_fields)
 
-        return put_parser, post_parser
+        resources.append(_make_outer_resource(name=name, data=data, post_parser=post_parser))
+        # resources.append(_make_inner_resource(name=name, data=data, put_parser=put_parser))
+
+        return resources
 
 
+def _get_type_map(*, sample):
+    """Returns dictionary of types of all input fields"""
+    type_map = {}
+    for key, value in sample.items():
+        type_map[key] = value if isinstance(value, type) else type(value)
 
-if __name__ == "__main__":
-    print(fields)
-    print(field_type_map)
-    field_example = {
-        "UserID": "0",
-        "FullName": "John Doe",
-        "Email": "example@example.com",
-        "DoB": "1/1/2000",
-        "Gender": "male",
-        "Weight": 80.2,
-        "Height": 156,
-        "PrimaryDoctorID": "Jill Doe",
-        "PrimaryContact": "Jane Doe",
-        "SecondaryContact": "Jake Doe",
-        "Address": "1 Road Rd",
-        "Insurance": "Blue Cross",
-        "InsuranceGroupID": "U57",
-    }
+    return type_map
 
-    required_fields_example = []
+
+def _get_parsers(*, sample, required_fields):
+    """Get parsers for put and push operations"""
+    put_parser = reqparse.RequestParser()
+    post_parser = reqparse.RequestParser()
+
+    for field, value in sample.items():
+        put_parser.add_argument(field, type=type(value), required=False)
+        post_parser.add_argument(field, type=type(value), required=True if field in required_fields else False)
+
+    return put_parser, post_parser
+
+
+def _make_outer_resource(*, name, data, post_parser):
+    def get(**kwargs):
+        return data
+
+    def delete(**kwargs):
+        abort_if_operation_unsupported("delete")
+
+    def put(**kwargs):
+        abort_if_operation_unsupported("put")
+
+    def post(**kwargs):
+        args = post_parser.parse_args()
+        id = str(int(max(USER_DATA.keys())) + 1)
+        data[id] = {"UserID": id}
+        for field in args.keys():
+            data[id][field] = args[field]
+        return data[id], 201
+
+    return ResourceElement(url=f"/{name}", get=get, delete=delete, put=put, post=post)
+
+
+def _make_inner_resource(*, name, data, put_parser):
+    pass

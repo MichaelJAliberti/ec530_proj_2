@@ -1,0 +1,41 @@
+from src.utils.file import check_file
+from src.device.device_interface import DeviceInterface
+
+from src.data_management.restful_service import RESTService
+from src.data_management.resource_factory import ResourceFactory
+
+if __name__ == "__main__":
+    # print(check_file("what.txt", "txt"))
+    # print(wrapper("what.txt", "txt"))
+
+    # print(True and True and False)
+    #
+    # data = {"mac": ""}
+    # DeviceInterface.create_from_data(data)
+
+    sample = {
+        "0": {
+            "UserID": "0",
+            "FullName": "John Doe",
+            "Email": "example@example.com",
+            "DoB": "1/1/2000",
+            "Gender": "male",
+            "Weight": 80.2,
+            "Height": 156,
+            "PrimaryContact": "Jane Doe",
+            "SecondaryContact": "Jake Doe",
+            "Address": "1 Road Rd",
+            "Insurance": "Blue Cross",
+            "InsuranceGroupID": "U57",
+        },
+    }
+
+    resources = ResourceFactory.make_resources(name="user", sample=sample)
+    for resource in resources:
+        print(resource.url)
+    service = RESTService.build_from_resources(resources)
+    service.app.run(debug=True)
+
+
+
+

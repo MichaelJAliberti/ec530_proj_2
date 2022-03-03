@@ -1,25 +1,23 @@
 from flask import Flask
 from flask_restful import Api
 
-from components.user_info import user_info
-
 
 class RESTService:
     def __init__(self):
         self.app = Flask(__name__)
         self.api = Api(self.app)
-        self._collect_components()
-        self._add_resources()
 
-    def _collect_components(self):
-        self.components = [user_info]
+    @classmethod
+    def build_from_resources(cls, resources):
+        service = RESTService()
+        service._add_resources(resources)
+        return service
 
-    def _add_resources(self):
-        for component in self.components:
-            for resource_info in component:
-                self.api.add_resource(
-                    resource_info["resource"], resource_info["sub_url"]
-                )
+    def _add_resources(self, resources):
+        for resource in resources:
+            self.api.add_resource(
+                resource, resource.url
+            )
 
 
 if __name__ == "__main__":
