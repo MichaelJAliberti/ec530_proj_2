@@ -1,21 +1,22 @@
-from flask_restful import reqparse, abort, Resource, fields, marshal_with
+from flask import Flask
+from flask_restful import reqparse, abort, Resource, fields, marshal_with, Api
 
 
 USER_DATA = {
-    "0": {
-        "UserID": "0",
-        "FullName": "John Doe",
-        "Email": "example@example.com",
-        "DoB": "1/1/2000",
-        "Gender": "male",
-        "Weight": 80.2,
-        "Height": 156,
-        "PrimaryContact": "Jane Doe",
-        "SecondaryContact": "Jake Doe",
-        "Address": "1 Road Rd",
-        "Insurance": "Blue Cross",
-        "InsuranceGroupID": "U57",
-    },
+    # "0": {
+    #     "UserID": "0",
+    #     "FullName": "John Doe",
+    #     "Email": "example@example.com",
+    #     "DoB": "1/1/2000",
+    #     "Gender": "male",
+    #     "Weight": 80.2,
+    #     "Height": 156,
+    #     "PrimaryContact": "Jane Doe",
+    #     "SecondaryContact": "Jake Doe",
+    #     "Address": "1 Road Rd",
+    #     "Insurance": "Blue Cross",
+    #     "InsuranceGroupID": "U57",
+    # },
 }
 
 fields = {
@@ -45,8 +46,12 @@ base_parser.add_argument("Insurance", type=str, required=False)
 base_parser.add_argument("InsuranceGroupID", type=str, required=False)
 
 post_parser = base_parser.copy()
-post_parser.add_argument("FullName", type=str, required=True, help="FullName cannot be blank.")
-post_parser.add_argument("Email", type=str, required=True, help="Email cannot be blank.")
+post_parser.add_argument(
+    "FullName", type=str, required=True, help="FullName cannot be blank."
+)
+post_parser.add_argument(
+    "Email", type=str, required=True, help="Email cannot be blank."
+)
 
 put_parser = base_parser.copy()
 put_parser.add_argument("FullName", type=str, required=False)
@@ -81,8 +86,8 @@ class UserList(Resource):
         return USER_DATA
 
     def post(self):
-        args = post_parser.parse_args()
-        id = str(int(max(USER_DATA.keys())) + 1)
+        args = put_parser.parse_args()
+        id = str(int(max(USER_DATA.keys())) + 1) if USER_DATA.keys() else "1"
         USER_DATA[id] = {"UserID": id}
         for field in args.keys():
             USER_DATA[id][field] = args[field]
@@ -92,10 +97,22 @@ class UserList(Resource):
 user_info = [
     {
         "resource": UserList,
-        "sub_url": "/users",
+        "url": "/user",
     },
     {
         "resource": User,
-        "sub_url": "/users/<id>",
+        "url": "/user/<id>",
     },
 ]
+
+if __name__ == "__main__":
+    app = Flask(__name__)
+    api = Api(app)
+
+    for resource in user_info:
+        api.add_resource(
+            resource["resource"],
+            resource["url"]
+        )
+
+    app.run(debug=True)
