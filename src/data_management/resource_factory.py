@@ -1,4 +1,4 @@
-from flask_restful import reqparse, abort
+from flask_restful import reqparse, abort, Resource
 
 
 def abort_if_does_not_exist(id, data):
@@ -45,44 +45,48 @@ def _get_parsers(*, sample, required_fields):
 
 
 def _make_outer_resource(*, name, data, post_parser):
-    def get(**kwargs):
-        return data
+    class OuterResource(Resource):
+        def get(self):
+            return data
 
-    def delete(**kwargs):
-        abort_if_operation_unsupported("DELETE", name)
+        def delete(self):
+            abort_if_operation_unsupported("DELETE", name)
 
-    def put(**kwargs):
-        abort_if_operation_unsupported("PUT", name)
+        def put(self):
+            abort_if_operation_unsupported("PUT", name)
 
-    def post(**kwargs):
-        args = post_parser.parse_args()
-        id = str(int(max(data.keys()).lstrip(name)) + 1) if data.keys() else f"{name}1"
-        data[id] = {f"{name}ID": id}
-        for field in args.keys():
-            data[id][field] = args[field]
-        return data[id], 201
+        def post(self):
+            args = post_parser.parse_args()
+            id = str(int(max(data.keys()).lstrip(name)) + 1) if data.keys() else f"{name}1"
+            data[id] = {f"{name}ID": id}
+            for field in args.keys():
+                data[id][field] = args[field]
+            return data[id], 201
 
-    return {"get": get, "delete": delete, "put": put, "post": post, "url": f"/{name}"}
+    new_resource = type(name, (OuterResource,), {}) # https://stackoverflow.com/questions/9363068/why-python-exec-define-class-not-working
+    return {"resource": new_resource, "url": f"/{name}"}
 
 
 def _make_inner_resource(*, name, data, put_parser):
-    def get(**kwargs):
-        abort_if_does_not_exist(kwargs[id], data)
-        return data[kwargs[id]]
-    
-    def delete(**kwargs):
-        abort_if_does_not_exist(kwargs[id], data)
-        del data[kwargs[id]]
-        return "", 204
+    class InnerResource(Resource):
+        def get(self, id):
+            abort_if_does_not_exist(id, data)
+            return data[id]
+        
+        def delete(self, id):
+            abort_if_does_not_exist(id, data)
+            del data[id]
+            return "", 204
 
-    def put(**kwargs):
-        abort_if_does_not_exist(kwargs[id], data)
-        args = put_parser.parse_args()
-        for field in args.keys():
-            data[kwargs[id]][field] = args[field]
-        return data[kwargs[id]], 201
+        def put(self, id):
+            abort_if_does_not_exist(id, data)
+            args = put_parser.parse_args()
+            for field in args.keys():
+                data[id][field] = args[field]
+            return data[id], 201
 
-    def post(**kwargs):
-        abort_if_operation_unsupported("POST", name)
+        def post(self, id):
+            abort_if_operation_unsupported("POST", name)
 
-    return {"get": get, "delete": delete, "put": put, "post": post, "url": f"/{name}/<id>"}
+    new_resource = type(name, (InnerResource,), {})
+    return {"resource": new_resource, "url": f"/Garry/<id>"}

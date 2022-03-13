@@ -18,7 +18,6 @@ class RESTService:
     def _add_resources(self, resources, resource_class):
         for resource in resources:
             self.api.add_resource(
-                resource_class,
-                resource["url"],
-                resource_class_kwargs=resource,
+                resource["resource"],
+                resource["url"]
             )

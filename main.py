@@ -34,8 +34,8 @@ if __name__ == "__main__":
     }
 
     resources = ResourceFactory.make_resources(name="user", sample=sample)
-    for element in ResourceFactory.make_resources(name="what", sample=sample):
-        resources.append(element)
+    # for element in ResourceFactory.make_resources(name="what", sample=sample):
+    #     resources.append(element)
 
     service = RESTService.build_from_resources(resources)
     service.app.run(debug=True)
