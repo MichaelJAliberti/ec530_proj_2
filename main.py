@@ -1,5 +1,5 @@
-from src.utils.file import check_file
-from src.device.device_interface import DeviceInterface
+# from src.utils.file import check_file
+# from src.device.device_interface import DeviceInterface
 
 from src.data_management.restful_service import RESTService
 from src.data_management.resource_factory import ResourceFactory
@@ -43,7 +43,3 @@ if __name__ == "__main__":
 
     service = RESTService.build_from_resources(resources)
     service.app.run(debug=True)
-
-
-
-
