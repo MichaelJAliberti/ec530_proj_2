@@ -1,8 +1,6 @@
 from flask import Flask
 from flask_restful import Api
 
-from src.data_management.resource_element import ResourceElement
-
 
 class RESTService:
     def __init__(self):
@@ -10,12 +8,12 @@ class RESTService:
         self.api = Api(self.app)
 
     @classmethod
-    def build_from_resources(cls, resources, resource_class=ResourceElement):
+    def build_from_resources(cls, resources):
         service = RESTService()
-        service._add_resources(resources, resource_class)
+        service._add_resources(resources)
         return service
 
-    def _add_resources(self, resources, resource_class):
+    def _add_resources(self, resources):
         for resource in resources:
             self.api.add_resource(
                 resource["resource"],
