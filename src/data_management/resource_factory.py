@@ -23,7 +23,7 @@ class ResourceFactory:
         resources.append(
             _make_outer_resource(name=name, data=data, post_parser=post_parser)
         )
-        # resources.append(_make_inner_resource(name=name, data=data, put_parser=put_parser))
+        resources.append(_make_inner_resource(name=name, data=data, put_parser=put_parser))
 
         return resources
 
@@ -63,7 +63,8 @@ def _make_outer_resource(*, name, data, post_parser):
                 data[id][field] = args[field]
             return data[id], 201
 
-    new_resource = type(name, (OuterResource,), {}) # https://stackoverflow.com/questions/9363068/why-python-exec-define-class-not-working
+    # source: https://stackoverflow.com/questions/9363068/why-python-exec-define-class-not-working
+    new_resource = type(name + "_outer", (OuterResource,), {})
     return {"resource": new_resource, "url": f"/{name}"}
 
 
@@ -82,11 +83,11 @@ def _make_inner_resource(*, name, data, put_parser):
             abort_if_does_not_exist(id, data)
             args = put_parser.parse_args()
             for field in args.keys():
-                data[id][field] = args[field]
+                if args[field]: data[id][field] = args[field]
             return data[id], 201
 
         def post(self, id):
             abort_if_operation_unsupported("POST", name)
 
-    new_resource = type(name, (InnerResource,), {})
-    return {"resource": new_resource, "url": f"/Garry/<id>"}
+    new_resource = type(name + "_inner", (InnerResource,), {})
+    return {"resource": new_resource, "url": f"/{name}/<id>"}
