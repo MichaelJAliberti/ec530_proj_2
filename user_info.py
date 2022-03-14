@@ -105,14 +105,14 @@ user_info = [
     },
 ]
 
+app = Flask(__name__)
+api = Api(app)
+
+for resource in user_info:
+    api.add_resource(
+        resource["resource"],
+        resource["url"]
+    )
+
 if __name__ == "__main__":
-    app = Flask(__name__)
-    api = Api(app)
-
-    for resource in user_info:
-        api.add_resource(
-            resource["resource"],
-            resource["url"]
-        )
-
     app.run()
