@@ -13,7 +13,7 @@ def abort_if_operation_unsupported(operation, name):
 class ResourceFactory:
     @classmethod
     def make_resources(cls, *, name, sample, required_fields=[]):
-        data = {}
+        data = {"filler": "Hello World"}
         resources = []
 
         put_parser, post_parser = _get_parsers(
