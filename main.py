@@ -1,8 +1,7 @@
 from src.data_management.restful_service import RESTService
 from src.data_management.resource_factory import ResourceFactory
 
-if __name__ == "__main__":
-    sample = {
+sample = {
         "FullName": "John Doe",
         "Email": "example@example.com",
         "DoB": "1/1/2000",
@@ -16,6 +15,10 @@ if __name__ == "__main__":
         "InsuranceGroupID": "U57",
     }
 
-    resources = ResourceFactory.make_resources(name="user", sample=sample)
-    service = RESTService.build_from_resources(resources)
-    service.app.run()
+resources = ResourceFactory.make_resources(name="user", sample=sample)
+service = RESTService.build_from_resources(resources)
+app = service.app
+
+
+if __name__ == "__main__":
+    app.run()
