@@ -16,6 +16,6 @@ if __name__ == "__main__":
         "InsuranceGroupID": "U57",
     }
 
-    resources = ResourceFactory.make_resources(name="user", sample=sample)
+    resources = ResourceFactory.make_resources(name="/", sample=sample)
     service = RESTService.build_from_resources(resources)
     service.app.run()
