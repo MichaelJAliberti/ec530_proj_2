@@ -18,4 +18,4 @@ if __name__ == "__main__":
 
     resources = ResourceFactory.make_resources(name="user", sample=sample)
     service = RESTService.build_from_resources(resources)
-    service.app.run(debug=True)
+    service.app.run()
