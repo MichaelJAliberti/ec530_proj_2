@@ -20,10 +20,10 @@ class ResourceFactory:
             template_data=template_data, required_fields=required_fields
         )
         resources.append(
-            _make_outer_resource(name=name, data=data, post_parser=post_parser)
+            _make_outer_dict_resource(name=name, data=data, post_parser=post_parser)
         )
         resources.append(
-            _make_inner_resource(name=name, data=data, put_parser=put_parser)
+            _make_inner_dict_resource(name=name, data=data, put_parser=put_parser)
         )
 
         return resources
@@ -45,7 +45,7 @@ def _get_parsers(*, template_data, required_fields):
     return put_parser, post_parser
 
 
-def _make_outer_resource(*, name, data, post_parser):
+def _make_outer_dict_resource(*, name, data, post_parser):
     class OuterResource(Resource):
         def get(self):
             return data
@@ -74,7 +74,7 @@ def _make_outer_resource(*, name, data, post_parser):
     return {"class": new_resource, "url": f"/{name}"}
 
 
-def _make_inner_resource(*, name, data, put_parser):
+def _make_inner_dict_resource(*, name, data, put_parser):
     class InnerResource(Resource):
         def get(self, id):
             abort_if_does_not_exist(id, data)
