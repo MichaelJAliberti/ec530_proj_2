@@ -8,6 +8,7 @@ flake8 = "*"
 black = "*"
 pytest = "*"
 datetime = "*"
+speechrecognition = "*"
 
 [dev-packages]
 
