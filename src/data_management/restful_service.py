@@ -10,19 +10,22 @@ class RESTService:
         self.api = Api(self.app)
 
     @classmethod
-    def build_from_samples(cls, sample):
+    def build_from_templates(cls, *args):
         service = RESTService()
-        service._add_resources(
-            ResourceFactory.make_resources(name="user", sample=sample)
-        )
+        for template in args:
+            service._add_resources(
+                ResourceFactory.make_resources(name=template.name, template_data=template.data)
+            )
         return service
 
     @classmethod
-    def build_from_resources(cls, resources):
+    def build_from_resources(cls, *args):
         service = RESTService()
-        service._add_resources(resources)
+        [service._add_resources(resources) for resources in args]
         return service
 
     def _add_resources(self, resources):
-        for resource in resources:
+        [
             self.api.add_resource(resource["class"], resource["url"])
+            for resource in resources
+        ]

@@ -12,14 +12,13 @@ def abort_if_operation_unsupported(operation, name):
 
 class ResourceFactory:
     @classmethod
-    def make_resources(cls, *, name, sample, required_fields=[]):
+    def make_resources(cls, *, name, template_data, required_fields=[]):
         data = {}
         resources = []
 
         put_parser, post_parser = _get_parsers(
-            sample=sample, required_fields=required_fields
+            template_data=template_data, required_fields=required_fields
         )
-
         resources.append(
             _make_outer_resource(name=name, data=data, post_parser=post_parser)
         )
@@ -30,12 +29,12 @@ class ResourceFactory:
         return resources
 
 
-def _get_parsers(*, sample, required_fields):
+def _get_parsers(*, template_data, required_fields):
     """Get parsers for put and push operations"""
     put_parser = reqparse.RequestParser()
     post_parser = reqparse.RequestParser()
 
-    for field, value in sample.items():
+    for field, value in template_data.items():
         put_parser.add_argument(field, type=type(value), required=False)
         post_parser.add_argument(
             field,
@@ -59,10 +58,10 @@ def _make_outer_resource(*, name, data, post_parser):
 
         def post(self):
             args = post_parser.parse_args()
-            id = (
-                str(int(max(data.keys()).lstrip(name)) + 1)
+            id = str(
+                int(max(data.keys())) + 1
                 if data.keys()
-                else f"{name}1"
+                else 1
             )
             data[id] = {f"{name}ID": id}
             for field in args.keys():
