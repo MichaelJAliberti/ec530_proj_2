@@ -10,7 +10,8 @@ Welcome to HealthcareApp's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+   device
+   utils
 
 
 Indices and tables
