@@ -1,7 +1,7 @@
-src
-===
+utils
+=====
 
 .. toctree::
    :maxdepth: 4
 
-   src
+   utils

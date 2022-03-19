@@ -1,13 +1,13 @@
-src.utils package
-=================
+utils package
+=============
 
 Submodules
 ----------
 
-src.utils.file module
----------------------
+utils.file module
+-----------------
 
-.. automodule:: src.utils.file
+.. automodule:: utils.file
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ src.utils.file module
 Module contents
 ---------------
 
-.. automodule:: src.utils
+.. automodule:: utils
    :members:
    :undoc-members:
    :show-inheritance:
