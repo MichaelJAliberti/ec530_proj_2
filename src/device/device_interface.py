@@ -20,7 +20,7 @@ class DeviceInterface:
 
         :param data: information from a device
         :type data: dict
-        ...
+
         :return: a DeviceInterface built with input data
         :rtype: DeviceInterface
         """
@@ -37,7 +37,7 @@ class DeviceInterface:
 
         :param data: information from a device
         :type data: dict
-        ...
+
         :return: a DeviceInterface built with input data
         :rtype: DeviceInterface
         """

@@ -12,7 +12,7 @@ def check_file(file_path, format):
     :type file_path: str
     :param format: file type (i.e. txt)
     :type format: str
-    ...
+
     :return: true if valid, false if not
     :rtype: bool
     """
