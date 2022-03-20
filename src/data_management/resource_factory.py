@@ -9,8 +9,8 @@ from src.data_management.error_handling import (
 class ResourceFactory:
     @classmethod
     def make_resources(cls, *, template_data, required_fields=[]):
-        data = _get_fields_from_template(template_data)
         resources = []
+        data = _get_fields_from_template(template_data)
 
         for key, value in template_data.items():
             data_ref = _get_data_ref(key, value, data=data)
@@ -19,6 +19,8 @@ class ResourceFactory:
             put_parser, post_parser = _get_parsers(
                 template_data=value_ref, required_fields=required_fields
             )
+
+            # NEED LOGIC FOR WHEN TO DO THIS
             resources.append(
                 _make_outer_dict_resource(
                     name=key, data=data_ref, post_parser=post_parser
@@ -51,6 +53,20 @@ def _define_new_resource(*, name, class_def):
 
 
 def _get_data_ref(key, value, *, data):
+    """returns a data reference lower in a dictionary, attempts to parse
+        past key words like "ID"
+    
+    :param key: key into data
+    :type: str
+    :param value: value at key in data
+    :type: any
+    :param data: data to derive a lower reference from
+    :type: dict
+
+    :return: a data reference lower in data
+    :rtype: any
+    """
+    # TYPE CHECK?
     data_ref = data[key]
     if isinstance(value, dict) and list(value.keys())[0] == "ID":
         data_ref["ID"] = {} if isinstance(value["ID"], dict) else []
@@ -60,6 +76,15 @@ def _get_data_ref(key, value, *, data):
 
 
 def _get_value_ref(value):
+    """returns a value reference in a dictionary, attempts to parse
+        past key words like "ID"
+    
+    :param value: value at some key in a dictionary
+    :type: any
+
+    :return: a reference to a value in a dictionary
+    :rtype: any
+    """
     value_ref = value
     if isinstance(value, dict) and list(value.keys())[0] == "ID":
         value_ref = value["ID"]
@@ -68,16 +93,32 @@ def _get_value_ref(value):
 
 
 def _get_fields_from_template(template_data):
+    """copies top-level keys and types from a template into a new dictionary
+    
+    :param template_data: partial of full api template data dictionary
+    :type: dict
+
+    :return: a new dictionary
+    :rtype: dict
+    """
     data = {}
     for key, value in template_data.items():
-        # could be broader:
-        data[key] = {} if isinstance(value, dict) else []
+        data[key] = {} if isinstance(value, dict) else [] if isinstance(value, list) else None
 
     return data
 
 
-def _get_parsers(*, template_data, required_fields):
-    """Get parsers for put and push operations"""
+def _get_parsers(*, template_data, required_fields=[]):
+    """get parsers for PUT and POST operations
+    
+    :param template_data: partial of full api template data dictionary
+    :type: dict
+    :parm required_fields: a list of fields required for post operations
+    :type: list
+
+    :return: a parser for PUT requests, a parser for POST requests
+    :rtype: tuple
+    """
     put_parser = reqparse.RequestParser()
     post_parser = reqparse.RequestParser()
 
