@@ -1,13 +1,9 @@
-from flask_restful import reqparse, abort, Resource
+from flask_restful import reqparse, Resource
 
-
-def abort_if_does_not_exist(id, data):
-    if id not in data:
-        abort(404, message=f"Element {id} doesn't exist.")
-
-
-def abort_if_operation_unsupported(operation, name):
-    abort(405, message=f"{operation.upper()} not supported for resource {name}.")
+from src.data_management.error_handling import (
+    abort_if_does_not_exist,
+    abort_if_operation_unsupported,
+)
 
 
 class ResourceFactory:
@@ -24,13 +20,34 @@ class ResourceFactory:
                 template_data=value_ref, required_fields=required_fields
             )
             resources.append(
-                _make_outer_dict_resource(name=key, data=data_ref, post_parser=post_parser)
+                _make_outer_dict_resource(
+                    name=key, data=data_ref, post_parser=post_parser
+                )
             )
             resources.append(
-                _make_inner_dict_resource(name=key, data=data_ref, put_parser=put_parser)
+                _make_inner_dict_resource(
+                    name=key, data=data_ref, put_parser=put_parser
+                )
             )
 
         return resources
+
+
+def _define_new_resource(*, name, class_def):
+    """creates a new class for each resource to circumvent flask_restful's
+    1:1 class-to-resource restriction
+
+    :param name: name for this resource
+    :type: str
+    :param class_def: the class definition for this resource
+    :type: type
+
+    :return: a copy of class_def with a new name
+    :rtype: type
+    """
+    # source:
+    # https://stackoverflow.com/questions/9363068/why-python-exec-define-class-not-working
+    return type(name, (class_def,), {})
 
 
 def _get_data_ref(key, value, *, data):
@@ -88,19 +105,13 @@ def _make_outer_dict_resource(*, name, data, post_parser):
 
         def post(self):
             args = post_parser.parse_args()
-            id = str(
-                int(max(data.keys())) + 1
-                if data.keys()
-                else 1
-            )
-            data[id] = {} # f"{name}ID": id
+            id = str(int(max(data.keys())) + 1 if data.keys() else 1)
+            data[id] = {}  # f"{name}ID": id
             for field in args.keys():
                 data[id][field] = args[field]
             return {id: data[id]}, 201
 
-    # source:
-    # https://stackoverflow.com/questions/9363068/why-python-exec-define-class-not-working
-    new_resource = type(name + "_outer", (OuterResource,), {})
+    new_resource = _define_new_resource(name=name + "_outer", class_def=OuterResource)
     return {"class": new_resource, "url": f"/{name}"}
 
 
@@ -126,5 +137,5 @@ def _make_inner_dict_resource(*, name, data, put_parser):
         def post(self, id):
             abort_if_operation_unsupported("POST", name)
 
-    new_resource = type(name + "_inner", (InnerResource,), {})
+    new_resource = _define_new_resource(name=name + "_inner", class_def=InnerResource)
     return {"class": new_resource, "url": f"/{name}/<id>"}
