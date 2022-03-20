@@ -14,7 +14,7 @@ class RESTService:
         service = RESTService()
         for template in args:
             service._add_resources(
-                ResourceFactory.make_resources(name=template.name, template_data=template.data)
+                ResourceFactory.make_resources(template_data=template)
             )
         return service
 

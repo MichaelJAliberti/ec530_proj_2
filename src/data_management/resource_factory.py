@@ -12,21 +12,51 @@ def abort_if_operation_unsupported(operation, name):
 
 class ResourceFactory:
     @classmethod
-    def make_resources(cls, *, name, template_data, required_fields=[]):
-        data = {}
+    def make_resources(cls, *, template_data, required_fields=[]):
+        data = _get_fields_from_template(template_data)
         resources = []
 
-        put_parser, post_parser = _get_parsers(
-            template_data=template_data, required_fields=required_fields
-        )
-        resources.append(
-            _make_outer_dict_resource(name=name, data=data, post_parser=post_parser)
-        )
-        resources.append(
-            _make_inner_dict_resource(name=name, data=data, put_parser=put_parser)
-        )
+        for key, value in template_data.items():
+            data_ref = _get_data_ref(key, value, data=data)
+            value_ref = _get_value_ref(value)
+
+            put_parser, post_parser = _get_parsers(
+                template_data=value_ref, required_fields=required_fields
+            )
+            resources.append(
+                _make_outer_dict_resource(name=key, data=data_ref, post_parser=post_parser)
+            )
+            resources.append(
+                _make_inner_dict_resource(name=key, data=data_ref, put_parser=put_parser)
+            )
 
         return resources
+
+
+def _get_data_ref(key, value, *, data):
+    data_ref = data[key]
+    if isinstance(value, dict) and list(value.keys())[0] == "ID":
+        data_ref["ID"] = {} if isinstance(value["ID"], dict) else []
+        data_ref = data_ref["ID"]
+
+    return data_ref
+
+
+def _get_value_ref(value):
+    value_ref = value
+    if isinstance(value, dict) and list(value.keys())[0] == "ID":
+        value_ref = value["ID"]
+
+    return value_ref
+
+
+def _get_fields_from_template(template_data):
+    data = {}
+    for key, value in template_data.items():
+        # could be broader:
+        data[key] = {} if isinstance(value, dict) else []
+
+    return data
 
 
 def _get_parsers(*, template_data, required_fields):
@@ -63,10 +93,10 @@ def _make_outer_dict_resource(*, name, data, post_parser):
                 if data.keys()
                 else 1
             )
-            data[id] = {f"{name}ID": id}
+            data[id] = {} # f"{name}ID": id
             for field in args.keys():
                 data[id][field] = args[field]
-            return data[id], 201
+            return {id: data[id]}, 201
 
     # source:
     # https://stackoverflow.com/questions/9363068/why-python-exec-define-class-not-working
