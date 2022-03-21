@@ -1,3 +1,4 @@
+from threading import local
 from flask_restful import reqparse, Resource
 
 from src.data_management.error_handling import (
@@ -66,27 +67,16 @@ def _get_data_from_template(template_data):
     return data
 
 
-def _get_data_ref(key, value, *, data):
-    """returns a data reference lower in a dictionary, attempts to parse
-        past key words like "<id>"
+def _get_url(key_chain):
+    """creates an appropriate resource url from keys traversed in the template
 
-    :param key: key into data
-    :type: str
-    :param value: value at key in data
-    :type: any
-    :param data: data to derive a lower reference from
-    :type: dict
+    :param key_chain: list of keys traversed so far
+    :type: list
 
-    :return: a data reference lower in data
-    :rtype: any
+    :return: a resource url
+    :rtype: str
     """
-    # TYPE CHECK?
-    data_ref = data[key]
-    if isinstance(value, dict) and list(value.keys())[0] == "<id>":
-        data_ref["<id>"] = {} if isinstance(value["<id>"], dict) else []
-        data_ref = data_ref["<id>"]
-
-    return data_ref
+    return "/" + "/".join(key_chain)
 
 
 def _get_value_ref(value):
@@ -107,9 +97,9 @@ def _get_value_ref(value):
 
 
 def _gen_resources_per_layer(
-    *, template_data, data, resources, url="", required_fields=[]
+    *, template_data, data, resources, key_chain=[], required_fields=[]
 ):
-    """recursivel generate resources by parsing template_data
+    """recursively generate resources by parsing template_data
 
     :param template_data: data to convert into resources
     :type: dict
@@ -117,29 +107,61 @@ def _gen_resources_per_layer(
     :type: dict
     :param resources: list of resources to append to
     :type: list
-    :param url: chain of keys to form url path for resource
-    :type: str
+    :param key_chain: chain of keys so far to form url path for resource
+    :type: list
     :param required_fields: fields required for POST requests
     :type: dict
 
     :return: list of dictionaries of resource classes and urls
     :rtype: list
     """
+    if not isinstance(template_data, dict): 
+        return
+
     for key, value in template_data.items():
-        data_ref = _get_data_ref(key, value, data=data)
+        # print("PHASE")
+        # print(template_data)
+        # print("---")
+        # print(data)
+        # print("---")
+        # print(value)
+        # print("---")
+        # print(key)
+        # print()
+
+        if not isinstance(value, dict): 
+            continue
+
         value_ref = _get_value_ref(value)
-        local_url = url + "/" + key
+        
+        local_chain = key_chain.copy()
+        local_chain.append(key)
 
         put_parser, post_parser = _get_parsers(
             template_data=value_ref, required_fields=required_fields
         )
 
-        resources.append(
-            _make_outer_dict_resource(url=local_url, data=data_ref, post_parser=post_parser)
-        )
-        resources.append(
-            _make_inner_dict_resource(url=local_url, data=data_ref, put_parser=put_parser)
-        )
+        if list(value.keys())[0] == "<id>":
+            data_ref = data[key] # make each branch its own dictionary?
+            resources.append(
+                _make_outer_dict_resource(key_chain=local_chain, data=data_ref, post_parser=post_parser)
+            )
+            _gen_resources_per_layer(
+                template_data=value,
+                data=data,
+                resources=resources,
+                key_chain=local_chain
+            )
+        else:
+            resources.append(
+                _make_inner_dict_resource(key_chain=local_chain, data=data, put_parser=put_parser)
+            )
+            # _gen_resources_per_layer(
+            #     template_data=value_ref,
+            #     data=data,
+            #     resources=resources,
+            #     key_chain=local_chain
+            # )
 
 
 def _get_parsers(*, template_data, required_fields=[]):
@@ -167,7 +189,9 @@ def _get_parsers(*, template_data, required_fields=[]):
     return put_parser, post_parser
 
 
-def _make_outer_dict_resource(*, url, data, post_parser):
+def _make_outer_dict_resource(*, key_chain, data, post_parser):
+    url = _get_url(key_chain)
+    
     class OuterResource(Resource):
         def get(self):
             return data
@@ -186,31 +210,48 @@ def _make_outer_dict_resource(*, url, data, post_parser):
                 data[id][field] = args[field]
             return {id: data[id]}, 201
 
-    new_resource = _define_new_resource(name=url + "_outer", class_def=OuterResource)
+    new_resource = _define_new_resource(name=url, class_def=OuterResource)
     return {"class": new_resource, "url": url}
 
 
-def _make_inner_dict_resource(*, url, data, put_parser):
+def _make_inner_dict_resource(*, key_chain, data, put_parser):
+    url = _get_url(key_chain)
+    
     class InnerResource(Resource):
         def get(self, id):
-            abort_if_does_not_exist(id, data)
-            return data[id]
+            return _traverse_key_chain(id=id, key_chain=key_chain, data=data)
 
         def delete(self, id):
-            abort_if_does_not_exist(id, data)
-            del data[id]
+            local_data = _traverse_key_chain(id=id, key_chain=key_chain[:-1], data=data)
+            key = id if key_chain[-1] == "<id>" else key_chain[-1]
+            abort_if_does_not_exist(key, local_data)
+            
+            del local_data[key]
             return "", 204
 
         def put(self, id):
-            abort_if_does_not_exist(id, data)
+            local_data = _traverse_key_chain(id=id, key_chain=key_chain, data=data)
             args = put_parser.parse_args()
             for field in args.keys():
                 if args[field]:
-                    data[id][field] = args[field]
-            return data[id], 201
+                    local_data[field] = args[field]
+            return local_data, 201
 
         def post(self, id):
             abort_if_operation_unsupported("POST", url)
 
-    new_resource = _define_new_resource(name=url + "_inner", class_def=InnerResource)
-    return {"class": new_resource, "url": f"{url}/<id>"}
+    new_resource = _define_new_resource(name=url, class_def=InnerResource)
+    return {"class": new_resource, "url": url}
+
+
+def _traverse_key_chain(*, id, key_chain, data):
+    local_data = data
+    for key in key_chain:
+        if key == "<id>":
+            abort_if_does_not_exist(id, local_data)
+            local_data = local_data[id]
+        else:
+            abort_if_does_not_exist(key, local_data)
+            local_data = local_data[key]
+
+    return local_data
