@@ -117,7 +117,7 @@ def _gen_resources_per_layer(
     :type: dict
     :param resources: list of resources to append to
     :type: list
-    :param url: key of chains to form url path for resource
+    :param url: chain of keys to form url path for resource
     :type: str
     :param required_fields: fields required for POST requests
     :type: dict
@@ -128,17 +128,17 @@ def _gen_resources_per_layer(
     for key, value in template_data.items():
         data_ref = _get_data_ref(key, value, data=data)
         value_ref = _get_value_ref(value)
+        local_url = url + "/" + key
 
         put_parser, post_parser = _get_parsers(
             template_data=value_ref, required_fields=required_fields
         )
 
-        # NEED LOGIC FOR WHEN TO DO THIS
         resources.append(
-            _make_outer_dict_resource(url=key, data=data_ref, post_parser=post_parser)
+            _make_outer_dict_resource(url=local_url, data=data_ref, post_parser=post_parser)
         )
         resources.append(
-            _make_inner_dict_resource(url=key, data=data_ref, put_parser=put_parser)
+            _make_inner_dict_resource(url=local_url, data=data_ref, put_parser=put_parser)
         )
 
 
@@ -173,21 +173,21 @@ def _make_outer_dict_resource(*, url, data, post_parser):
             return data
 
         def delete(self):
-            abort_if_operation_unsupported("DELETE", name)
+            abort_if_operation_unsupported("DELETE", url)
 
         def put(self):
-            abort_if_operation_unsupported("PUT", name)
+            abort_if_operation_unsupported("PUT", url)
 
         def post(self):
             args = post_parser.parse_args()
             id = str(int(max(data.keys())) + 1 if data.keys() else 1)
-            data[id] = {}  # f"{name}<id>": id
+            data[id] = {}  # f"{url}<id>": id
             for field in args.keys():
                 data[id][field] = args[field]
             return {id: data[id]}, 201
 
     new_resource = _define_new_resource(name=url + "_outer", class_def=OuterResource)
-    return {"class": new_resource, "url": f"/{url}"}
+    return {"class": new_resource, "url": url}
 
 
 def _make_inner_dict_resource(*, url, data, put_parser):
@@ -213,4 +213,4 @@ def _make_inner_dict_resource(*, url, data, put_parser):
             abort_if_operation_unsupported("POST", url)
 
     new_resource = _define_new_resource(name=url + "_inner", class_def=InnerResource)
-    return {"class": new_resource, "url": f"/{url}/<id>"}
+    return {"class": new_resource, "url": f"{url}/<id>"}

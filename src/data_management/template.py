@@ -25,9 +25,8 @@ DATA_TEMPLATE = {
                 "email": "example@example.com",
                 "dob": "1/1/2000",
                 "gender": "male",
-                "chats": ["CHAT ID"],
             },
-            "chats": [],
+            "chats": ["CHAT ID"],
         },
     },
 }
