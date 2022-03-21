@@ -119,16 +119,6 @@ def _gen_resources_per_layer(
         return
 
     for key, value in template_data.items():
-        # print("PHASE")
-        # print(template_data)
-        # print("---")
-        # print(data)
-        # print("---")
-        # print(value)
-        # print("---")
-        # print(key)
-        # print()
-
         if not isinstance(value, dict): 
             continue
 
@@ -245,6 +235,18 @@ def _make_inner_dict_resource(*, key_chain, data, put_parser):
 
 
 def _traverse_key_chain(*, id, key_chain, data):
+    """index into data along keys in key chain 
+
+    :param id: numerical identifier within data
+    :type: str
+    :param key_chain: chain of keys to be traversed
+    :type: list
+    :param data: data for the api
+    :type: dict
+
+    :return: the value in data at the end of key_chain
+    :rtype: any
+    """
     local_data = data
     for key in key_chain:
         if key == "<id>":

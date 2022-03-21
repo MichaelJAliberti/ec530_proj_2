@@ -15,7 +15,6 @@ DATA_TEMPLATE = {
             "timestamp": datetime.now(),
             "mac": "ff-ff-ff-ff-ff-ff",
             "value": 145,
-            "excess": 120,
         },
     },
     "user": {
