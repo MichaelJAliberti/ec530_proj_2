@@ -1,4 +1,3 @@
-from threading import local
 from flask_restful import reqparse, Resource
 
 from src.data_management.error_handling import (
@@ -97,9 +96,9 @@ def _gen_resources_per_layer(
     :param required_fields: fields required for POST requests
     :type: dict
     """
-    if isinstance(template_data, dict): 
+    if isinstance(template_data, dict):
         for key, value in template_data.items():
-            if not isinstance(value, dict): 
+            if not isinstance(value, dict):
                 continue
 
             data_ref = data
@@ -112,20 +111,25 @@ def _gen_resources_per_layer(
             )
 
             if list(value.keys())[0] == "<id>":
-                data_ref = data[key] # make each branch its own dictionary?
-                new_resource = _make_outer_dict_resource(data=data_ref, key_chain=local_chain, url=url, post_parser=post_parser)
+                data_ref = data[key]  # make each branch its own dictionary?
+                new_resource = _make_outer_dict_resource(
+                    data=data_ref,
+                    key_chain=local_chain,
+                    url=url,
+                    post_parser=post_parser,
+                )
             else:
-                new_resource = _make_inner_dict_resource(data=data_ref, key_chain=local_chain, url=url, put_parser=put_parser)
+                new_resource = _make_inner_dict_resource(
+                    data=data_ref, key_chain=local_chain, url=url, put_parser=put_parser
+                )
 
-            resources.append(
-                {"class": new_resource, "url": url}
-            )
-            
+            resources.append({"class": new_resource, "url": url})
+
             _gen_resources_per_layer(
                 template_data=value,
                 data=data,
                 resources=resources,
-                key_chain=local_chain
+                key_chain=local_chain,
             )
 
 
@@ -185,7 +189,7 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
             local_data = _traverse_key_chain(id=id, key_chain=key_chain[:-1], data=data)
             key = id if key_chain[-1] == "<id>" else key_chain[-1]
             abort_if_does_not_exist(key, local_data)
-            
+
             del local_data[key]
             return "", 204
 
@@ -204,7 +208,7 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
 
 
 def _traverse_key_chain(*, id, key_chain, data):
-    """index into data along keys in key chain 
+    """index into data along keys in key chain
 
     :param id: numerical identifier within data
     :type: str

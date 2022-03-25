@@ -1,4 +1,3 @@
-from distutils.log import debug
 from src.data_management.restful_service import RESTService
 from src.data_management.template import DATA_TEMPLATE
 
