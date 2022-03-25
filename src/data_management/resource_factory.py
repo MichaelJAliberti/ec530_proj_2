@@ -113,9 +113,9 @@ def _gen_resources_per_layer(
 
             if list(value.keys())[0] == "<id>":
                 data_ref = data[key] # make each branch its own dictionary?
-                new_resource = _make_outer_dict_resource(key_chain=local_chain, data=data_ref, post_parser=post_parser)
+                new_resource = _make_outer_dict_resource(data=data_ref, key_chain=local_chain, url=url, post_parser=post_parser)
             else:
-                new_resource = _make_inner_dict_resource(key_chain=local_chain, data=data_ref, put_parser=put_parser)
+                new_resource = _make_inner_dict_resource(data=data_ref, key_chain=local_chain, url=url, put_parser=put_parser)
 
             resources.append(
                 {"class": new_resource, "url": url}
@@ -154,9 +154,7 @@ def _get_parsers(*, template_data, required_fields=[]):
     return put_parser, post_parser
 
 
-def _make_outer_dict_resource(*, key_chain, data, post_parser):
-    url = _get_url(key_chain)
-    
+def _make_outer_dict_resource(*, data, key_chain, url, post_parser):
     class OuterResource(Resource):
         def get(self):
             return data
@@ -175,13 +173,10 @@ def _make_outer_dict_resource(*, key_chain, data, post_parser):
                 data[id][field] = args[field]
             return {id: data[id]}, 201
 
-    new_resource = copy_class_def(name=url, class_def=OuterResource)
-    return new_resource
+    return copy_class_def(name=url, class_def=OuterResource)
 
 
-def _make_inner_dict_resource(*, key_chain, data, put_parser):
-    url = _get_url(key_chain)
-    
+def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
     class InnerResource(Resource):
         def get(self, id):
             return _traverse_key_chain(id=id, key_chain=key_chain, data=data)
@@ -205,8 +200,7 @@ def _make_inner_dict_resource(*, key_chain, data, put_parser):
         def post(self, id):
             abort_if_operation_unsupported("POST", url)
 
-    new_resource = copy_class_def(name=url, class_def=InnerResource)
-    return new_resource
+    return copy_class_def(name=url, class_def=InnerResource)
 
 
 def _traverse_key_chain(*, id, key_chain, data):
