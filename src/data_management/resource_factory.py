@@ -22,7 +22,7 @@ class ResourceFactory:
         """
         data = _copy_keys_from_template(template_data)
         resources = []
-        _gen_resources_per_layer(
+        make_resources_per_layer(
             template_data=template_data,
             data=data,
             resources=resources,
@@ -30,6 +30,109 @@ class ResourceFactory:
         )
 
         return resources
+
+
+def make_resources_per_layer(
+    *, template_data, data, resources, key_chain=[], required_fields=[]
+):
+    """recursively generates resources by parsing template_data and appends them
+    to resources
+
+    :param template_data: data to convert into resources
+    :type: dict
+    :param data: data for the api
+    :type: dict
+    :param resources: list of resources to append to
+    :type: list
+    :param key_chain: chain of keys so far to form url path for resource
+    :type: list
+    :param required_fields: fields required for POST requests
+    :type: dict
+    """
+    if isinstance(template_data, dict):
+        make_dict_layer_resource(
+            template_data=template_data,
+            data=data,
+            resources=resources,
+            key_chain=key_chain,
+            required_fields=required_fields,
+        )
+    elif isinstance(template_data, list):
+        make_dict_layer_resource(
+            template_data=template_data,
+            data=data,
+            resources=resources,
+            key_chain=key_chain,
+            required_fields=required_fields,
+        )
+
+
+def make_list_layer_resource(
+    *, template_data, data, resources, key_chain, required_fields
+):
+    """generates resource for a list layer in template_data, then calls
+    make_resources_per_layer to continue generating resources
+
+    :param template_data: data to convert into resources
+    :type: dict
+    :param data: data for the api
+    :type: dict
+    :param resources: list of resources to append to
+    :type: list
+    :param key_chain: chain of keys so far to form url path for resource
+    :type: list
+    :param required_fields: fields required for POST requests
+    :type: dict
+    """
+    url = _get_url(key_chain)
+
+
+def make_dict_layer_resource(
+    *, template_data, data, resources, key_chain, required_fields
+):
+    """generates resource for a dictionary layer in template_data, then calls
+    make_resources_per_layer to continue generating resources
+
+    :param template_data: data to convert into resources
+    :type: dict
+    :param data: data for the api
+    :type: dict
+    :param resources: list of resources to append to
+    :type: list
+    :param key_chain: chain of keys so far to form url path for resource
+    :type: list
+    :param required_fields: fields required for POST requests
+    :type: dict
+    """
+    for key, value in template_data.items():
+        local_chain = key_chain.copy()
+        local_chain.append(key)
+        url = _get_url(local_chain)
+
+        if isinstance(value, dict):
+            put_parser, post_parser = _get_parsers(
+                template_data=_get_value_ref(value), required_fields=required_fields
+            )
+            if list(value.keys())[0] == "<id>":
+                # make each branch its own dictionary?
+                new_resource = _make_outer_dict_resource(
+                    data=data[key],
+                    key_chain=local_chain,
+                    url=url,
+                    post_parser=post_parser,
+                )
+            else:
+                new_resource = _make_inner_dict_resource(
+                    data=data, key_chain=local_chain, url=url, put_parser=put_parser
+                )
+            resources.append({"class": new_resource, "url": url})
+
+        make_resources_per_layer(
+            template_data=value,
+            data=data,
+            resources=resources,
+            key_chain=local_chain,
+        )
 
 
 def _copy_keys_from_template(template_data):
@@ -77,60 +180,6 @@ def _get_value_ref(value):
         value_ref = value["<id>"]
 
     return value_ref
-
-
-def _gen_resources_per_layer(
-    *, template_data, data, resources, key_chain=[], required_fields=[]
-):
-    """recursively generates resources by parsing template_data and appends them
-    to resources
-
-    :param template_data: data to convert into resources
-    :type: dict
-    :param data: data for the api
-    :type: dict
-    :param resources: list of resources to append to
-    :type: list
-    :param key_chain: chain of keys so far to form url path for resource
-    :type: list
-    :param required_fields: fields required for POST requests
-    :type: dict
-    """
-    if isinstance(template_data, dict):
-        for key, value in template_data.items():
-            if not isinstance(value, dict):
-                continue
-
-            data_ref = data
-            local_chain = key_chain.copy()
-            local_chain.append(key)
-            url = _get_url(local_chain)
-
-            put_parser, post_parser = _get_parsers(
-                template_data=_get_value_ref(value), required_fields=required_fields
-            )
-
-            if list(value.keys())[0] == "<id>":
-                data_ref = data[key]  # make each branch its own dictionary?
-                new_resource = _make_outer_dict_resource(
-                    data=data_ref,
-                    key_chain=local_chain,
-                    url=url,
-                    post_parser=post_parser,
-                )
-            else:
-                new_resource = _make_inner_dict_resource(
-                    data=data_ref, key_chain=local_chain, url=url, put_parser=put_parser
-                )
-
-            resources.append({"class": new_resource, "url": url})
-
-            _gen_resources_per_layer(
-                template_data=value,
-                data=data,
-                resources=resources,
-                key_chain=local_chain,
-            )
 
 
 def _get_parsers(*, template_data, required_fields=[]):
