@@ -235,10 +235,12 @@ def _make_outer_dict_resource(*, data, key_chain, url, post_parser):
 
 def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
     class InnerResource(Resource):
-        def get(self, id):
+        def get(self, **kwargs):
+            id = kwargs["id"]
             return _traverse_key_chain(id=id, key_chain=key_chain, data=data)
 
-        def delete(self, id):
+        def delete(self, **kwargs):
+            id = kwargs["id"]
             local_data = _traverse_key_chain(id=id, key_chain=key_chain[:-1], data=data)
             key = id if key_chain[-1] == "<id>" else key_chain[-1]
             abort_if_does_not_exist(key, local_data)
@@ -246,7 +248,8 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
             del local_data[key]
             return "", 204
 
-        def put(self, id):
+        def put(self, **kwargs):
+            id = kwargs["id"]
             local_data = _traverse_key_chain(id=id, key_chain=key_chain, data=data)
             args = put_parser.parse_args()
             for field in args.keys():
@@ -254,7 +257,7 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
                     local_data[field] = args[field]
             return local_data, 201
 
-        def post(self, id):
+        def post(self, **kwargs):
             abort_if_operation_unsupported("POST", url)
 
     return copy_class_def(name=url, class_def=InnerResource)
