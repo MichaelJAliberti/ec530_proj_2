@@ -58,7 +58,7 @@ def make_resources_per_layer(
             required_fields=required_fields,
         )
     elif isinstance(template_data, list):
-        make_dict_layer_resource(
+        make_list_layer_resource(
             template_data=template_data,
             data=data,
             resources=resources,
@@ -84,7 +84,8 @@ def make_list_layer_resource(
     :param required_fields: fields required for POST requests
     :type: dict
     """
-    url = _get_url(key_chain)
+    # url = _get_url(key_chain)
+    pass
 
 
 def make_dict_layer_resource(
@@ -104,6 +105,9 @@ def make_dict_layer_resource(
     :param required_fields: fields required for POST requests
     :type: dict
     """
+    if not isinstance(template_data, dict):
+        return
+
     for key, value in template_data.items():
         local_chain = key_chain.copy()
         local_chain.append(key)
@@ -113,7 +117,7 @@ def make_dict_layer_resource(
             put_parser, post_parser = _get_parsers(
                 template_data=_get_value_ref(value), required_fields=required_fields
             )
-            if list(value.keys())[0] == "<id>":
+            if "<id>" in list(value.keys()):
                 # make each branch its own dictionary?
                 new_resource = _make_outer_dict_resource(
                     data=data[key],
