@@ -40,7 +40,7 @@ def make_resources_per_layer(
 
     :param template_data: data to convert into resources
     :type: dict
-    :param data: data for the api
+    :param data: full data dictonary for the api
     :type: dict
     :param resources: list of resources to append to
     :type: list
@@ -73,9 +73,9 @@ def make_list_layer_resource(
     """generates resource for a list layer in template_data, then calls
     make_resources_per_layer to continue generating resources
 
-    :param template_data: data to convert into resources
-    :type: dict
-    :param data: data for the api
+    :param template_data: data to convert into a resource
+    :type: list
+    :param data: full data dictonary for the api
     :type: dict
     :param resources: list of resources to append to
     :type: list
@@ -84,8 +84,14 @@ def make_list_layer_resource(
     :param required_fields: fields required for POST requests
     :type: dict
     """
-    # url = _get_url(key_chain)
-    pass
+    if not isinstance(template_data, list):
+        return
+
+    url = _get_url(key_chain)
+    
+    put_parser, post_parser = _get_parsers(
+        template_data=_get_value_ref(template_data), required_fields=required_fields
+    )
 
 
 def make_dict_layer_resource(
@@ -96,7 +102,7 @@ def make_dict_layer_resource(
 
     :param template_data: data to convert into resources
     :type: dict
-    :param data: data for the api
+    :param data: full data dictonary
     :type: dict
     :param resources: list of resources to append to
     :type: list
