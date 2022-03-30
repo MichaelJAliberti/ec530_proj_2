@@ -87,11 +87,24 @@ def make_list_layer_resource(
     if not isinstance(template_data, list):
         return
 
-    url = _get_url(key_chain)
+    # url = _get_url(key_chain)
     
-    put_parser, post_parser = _get_parsers(
-        template_data=_get_value_ref(template_data), required_fields=required_fields
-    )
+    # put_parser = _get_parser(
+    #     template_data=template_data[0], required_fields=required_fields
+    # ) if template_data else None
+    # post_parser = _get_parser(
+    #     template_data=template_data, required_fields=required_fields
+    # )
+
+    # new_resource = _make_list_resource(
+    #     data=data,
+    #     key_chain=key_chain,
+    #     url=url,
+    #     put_parser=put_parser,
+    #     post_parser=post_parser,
+    # )
+
+    # resources.append({"class": new_resource, "url": url})
 
 
 def make_dict_layer_resource(
@@ -120,7 +133,7 @@ def make_dict_layer_resource(
         url = _get_url(local_chain)
 
         if isinstance(value, dict):
-            put_parser, post_parser = _get_parsers(
+            parser = _get_parser(
                 template_data=_get_value_ref(value), required_fields=required_fields
             )
             if "<id>" in list(value.keys()):
@@ -129,11 +142,11 @@ def make_dict_layer_resource(
                     data=data[key],
                     key_chain=local_chain,
                     url=url,
-                    post_parser=post_parser,
+                    post_parser=parser,
                 )
             else:
                 new_resource = _make_inner_dict_resource(
-                    data=data, key_chain=local_chain, url=url, put_parser=put_parser
+                    data=data, key_chain=local_chain, url=url, put_parser=parser
                 )
             resources.append({"class": new_resource, "url": url})
 
@@ -192,29 +205,59 @@ def _get_value_ref(value):
     return value_ref
 
 
-def _get_parsers(*, template_data, required_fields=[]):
-    """get parsers for PUT and POST operations
+def _get_parser(*, template_data, required_fields=[]):
+    """get parser for PUT or POST operation
 
     :param template_data: partial of full api template data dictionary
     :type: dict
     :parm required_fields: a list of fields required for post operations
     :type: list
 
-    :return: a parser for PUT requests, a parser for POST requests
-    :rtype: tuple
+    :return: a parser for PUT or POST requests
+    :rtype: reqparse.RequestParser
     """
-    put_parser = reqparse.RequestParser()
-    post_parser = reqparse.RequestParser()
+    parser = reqparse.RequestParser()
 
     for field, value in template_data.items():
-        put_parser.add_argument(field, type=type(value), required=False)
-        post_parser.add_argument(
+        parser.add_argument(
             field,
             type=type(value),
             required=True if field in required_fields else False,
         )
 
-    return put_parser, post_parser
+    return parser
+
+
+def _make_list_resource(*, data, key_chain, url, put_parser, post_parser):
+    class ListResource(Resource):
+        def get(self, **kwargs):
+            id = kwargs["id"]
+            return _traverse_key_chain(id=id, key_chain=key_chain, data=data)
+
+        def delete(self, **kwargs):
+            """clear the list"""
+            id = kwargs["id"]
+            # local_data = _traverse_key_chain(id=id, key_chain=key_chain[:-1], data=data)
+            # key = id if key_chain[-1] == "<id>" else key_chain[-1]
+            # abort_if_does_not_exist(key, local_data)
+
+            # del local_data[key]
+            return "", 204
+
+        def put(self, **kwargs):
+            """append to list"""
+            id = kwargs["id"]
+            local_data = _traverse_key_chain(id=id, key_chain=key_chain, data=data)
+            # args = put_parser.parse_args()
+            # for field in args.keys():
+            #     if args[field]:
+            #         local_data[field] = args[field]
+            return local_data, 201
+
+        def post(self, **kwargs):
+            abort_if_operation_unsupported("POST", url)
+
+    return copy_class_def(name=url, class_def=ListResource)
 
 
 def _make_outer_dict_resource(*, data, key_chain, url, post_parser):
