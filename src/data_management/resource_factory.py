@@ -87,24 +87,21 @@ def make_list_layer_resource(
     if not isinstance(template_data, list):
         return
 
-    # url = _get_url(key_chain)
+    url = _get_url(key_chain)
     
-    # put_parser = _get_parser(
-    #     template_data=template_data[0], required_fields=required_fields
-    # ) if template_data else None
-    # post_parser = _get_parser(
-    #     template_data=template_data, required_fields=required_fields
-    # )
+    parser = _get_parser(
+        template_data=template_data, required_fields=required_fields
+    )
 
-    # new_resource = _make_list_resource(
-    #     data=data,
-    #     key_chain=key_chain,
-    #     url=url,
-    #     put_parser=put_parser,
-    #     post_parser=post_parser,
-    # )
+    new_resource = _make_list_resource(
+        data=data,
+        key_chain=key_chain,
+        url=url,
+        put_parser=parser,
+        post_parser=parser,
+    )
 
-    # resources.append({"class": new_resource, "url": url})
+    resources.append({"class": new_resource, "url": url})
 
 
 def make_dict_layer_resource(
@@ -208,7 +205,7 @@ def _get_value_ref(value):
 def _get_parser(*, template_data, required_fields=[]):
     """get parser for PUT or POST operation
 
-    :param template_data: partial of full api template data dictionary
+    :param template_data: partial api template data dictionary
     :type: dict
     :parm required_fields: a list of fields required for post operations
     :type: list
@@ -218,12 +215,19 @@ def _get_parser(*, template_data, required_fields=[]):
     """
     parser = reqparse.RequestParser()
 
-    for field, value in template_data.items():
-        parser.add_argument(
-            field,
-            type=type(value),
-            required=True if field in required_fields else False,
-        )
+    if isinstance(template_data, list):
+        if template_data:
+            parser.add_argument(
+                "value",
+                type=type(template_data[0]),
+            )
+    elif isinstance(template_data, dict):
+        for field, value in template_data.items():
+            parser.add_argument(
+                field,
+                type=type(value),
+                required=True if field in required_fields else False,
+            )
 
     return parser
 
@@ -300,6 +304,13 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
         def put(self, **kwargs):
             id = kwargs["id"]
             local_data = _traverse_key_chain(id=id, key_chain=key_chain, data=data)
+            
+            # temporary fix until above post generates nested lists
+            if not isinstance(local_data, dict):
+                layer_above = _traverse_key_chain(id=id, key_chain=key_chain[:-1], data=data)
+                layer_above[key_chain[-1]] = {}
+                local_data = layer_above[key_chain[-1]]
+
             args = put_parser.parse_args()
             for field in args.keys():
                 if args[field]:

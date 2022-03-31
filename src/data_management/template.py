@@ -2,7 +2,7 @@ from datetime import datetime
 
 
 DATA_TEMPLATE = {
-    "chat": {
+    "chats": {
         "<id>": {
             "users": ["USER ID"],
             "messages": [
@@ -10,14 +10,14 @@ DATA_TEMPLATE = {
             ],
         },
     },
-    "device": {
+    "devices": {
         "<id>": {
             "timestamp": datetime.now(),
             "mac": "ff-ff-ff-ff-ff-ff",
             "value": 145,
         },
     },
-    "user": {
+    "users": {
         "<id>": {
             "info": {
                 "full_name": "John Doe",
