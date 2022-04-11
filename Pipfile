@@ -12,6 +12,7 @@ flask-restful = "*"
 gunicorn = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
+requests = "*"
 
 [dev-packages]
 
