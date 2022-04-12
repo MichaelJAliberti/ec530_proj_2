@@ -1,5 +1,16 @@
 # Changelog
 
+## [2021.4.11]
+
+### Added
+
+- `data_management` module
+- `restful_service` sumbodule which initializes restful service based on a dictionary or existing resources
+- `resource_factory` submodule which creates resources based on a template dictionary
+- `error_handling` submodule to abort curl operations on anticipated fail states
+- `template` submodule which contains template for `chats`, `devices`, and `users`
+- `class_utils` submodule in `utils` module which enables copying and renaming class definitions
+
 ## [2021.2.22]
 
 ### Added
