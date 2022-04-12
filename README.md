@@ -8,93 +8,125 @@ Issues should identify a feature to add or a bug to be resolved.
 Before merging to main, a branch must include the implementation of the desired feature as well as a corresponding test.
 If a branch includes modifications to code in the `/src` directory, these changes should be documented in `changelog.md`
 
+---
+
 ## API Schema
 
-*User Tables:*
+### `/chats`:
+
 ```
-# UserInfo:
 {
-  UserID: 
-  Email:
-  Weight: {on registration}
-  Height: {on registration}
-  Gender:
-  PrimaryContact:
-  SecondaryContact:
-  DoB: 
-}
-
-
-# BillingInfo: (could be combined with UserInfo?)
-{
-  MedicalCare: 
-  Address: 
-  PrimaryCare:
-  Insurance:
-  InsuranceGroupID:
-  BillingInfo:
-}
-
-# AccessLevel:
-{
-  UserID: (int)
-  Patient: (bool)
-  Doctor: (bool)
-  Admin: (bool)
-}
-
-# Perscription:
-{
-  UserID:
-  Medicine:
-  Dosage:
-  StartTime:
-  StopTime:
-}
-
-# Measurements:
-{
-  UserID:
-  DeviceID:
-  Height:
-  Weight:
-  MeasuermentType:
-  MeasurementValue:
-  Date: (datetime)
-}
-
-# MedicalHistory:
-{
-  UserID:
-  Incidents:
+    "<id>": {
+        "users": [str],
+        "messages": [
+            {
+                "timestamp": datetime.datetime,
+                "user": str,
+                "payload": str,
+            }
+        ]
+    }
 }
 ```
 
-*device tables:*
+### `/chats/<id>`:
+
 ```
-# Devices:
 {
-  DeviceID:
-  DeviceType:
-  DateOfPurchase:
-  MacAddress:
-  CurrentAssignee:
-  CurrentFirware:
+    "users": [str],
+    "messages": [
+        {
+            "timestamp": datetime.datetime,
+            "user": str,
+            "payload": str,
+        }
+    ]
 }
+```
 
-# OwnershipChanges:
-{
-  DeviceID:
-  Assignee:
-  Assigner:
-  Date:
-}
+### `/chats/<id>/users`:
 
-# FirmwareChanges:
+```
+[str]
+```
+
+### `/chats/<id>/messages`:
+
+```
+[
+    {
+        "timestamp": datetime.datetime,
+        "user": str,
+        "payload": str,
+    }
+]
+```
+
+### `/devices`:
+
+```
 {
-  DeviceID:
-  PreviousFirware:
-  NewFirmware:
-  Date:
+    "<id>": {
+        "timestamp": datetime.datetime,
+        "mac": str,
+        "value": int,
+    }
 }
+```
+
+### `/devices/<id>`:
+
+```
+{
+    "timestamp": datetime.datetime,
+    "mac": str,
+    "value": int,
+}
+```
+
+### `/users`:
+
+```
+{
+    "<id>": {
+        "info": {
+            "full_name": str,
+            "email": str,
+            "dob": str,
+            "gender": str,
+        },
+        "chats": [str]
+    }
+}
+```
+
+### `/users/<id>`:
+
+```
+{
+    "info": {
+        "full_name": str,
+        "email": str,
+        "dob": str,
+        "gender": str,
+    },
+    "chats": [str]
+}
+```
+
+### `/users/<id>/info`:
+
+```
+{
+    "full_name": str,
+    "email": str,
+    "dob": str,
+    "gender": str,
+}
+```
+
+### `/users/<id>/chats`:
+
+```
+[str]
 ```

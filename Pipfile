@@ -9,6 +9,10 @@ black = "*"
 pytest = "*"
 datetime = "*"
 speechrecognition = "*"
+flask-restful = "*"
+gunicorn = "*"
+sphinx-rtd-theme = "*"
+sphinx = "*"
 
 [dev-packages]
 
