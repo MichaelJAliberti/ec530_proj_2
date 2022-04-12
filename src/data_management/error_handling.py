@@ -5,9 +5,9 @@ def abort_if_does_not_exist(key, data):
     """throws a curl status error if a given key does not exist in a dictionary
 
     :param key: key into data
-    :type: str
+    :type key: str
     :param data: dictionary of api data
-    :type: dict
+    :type data: dict
     """
     if id not in data:
         abort(404, message=f"Element {key} doesn't exist.")
@@ -18,8 +18,8 @@ def abort_if_operation_unsupported(operation, name):
     resource
 
     :param operation: curl operation name
-    :type: str
+    :type operation: str
     :param name: url path to the calling resource
-    :type: str
+    :type name: str
     """
     abort(405, message=f"{operation.upper()} not supported for resource {name}.")

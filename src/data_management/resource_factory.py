@@ -13,9 +13,9 @@ class ResourceFactory:
         """generates resources based on template_data and returns them
 
         :param template_data: data to convert into resources
-        :type: dict
+        :type template_data: dict
         :param required_fields: fields required for POST requests
-        :type: dict
+        :type required_fields: dict
 
         :return: list of dictionaries of resource classes and urls
         :rtype: list
@@ -39,15 +39,15 @@ def make_resources_per_layer(
     to resources
 
     :param template_data: data to convert into resources
-    :type: dict
+    :type template_data: dict
     :param data: full data dictonary for the api
-    :type: dict
+    :type data: dict
     :param resources: list of resources to append to
-    :type: list
+    :type resources: list
     :param key_chain: chain of keys so far to form url path for resource
-    :type: list
+    :type key_chain: list
     :param required_fields: fields required for POST requests
-    :type: dict
+    :type required_fields: dict
     """
     if isinstance(template_data, dict):
         make_dict_layer_resource(
@@ -74,15 +74,15 @@ def make_list_layer_resource(
     make_resources_per_layer to continue generating resources
 
     :param template_data: data to convert into a resource
-    :type: list
+    :type template_data: list
     :param data: full data dictonary for the api
-    :type: dict
+    :type data: dict
     :param resources: list of resources to append to
-    :type: list
+    :type resources: list
     :param key_chain: chain of keys so far to form url path for resource
-    :type: list
+    :type key_chain: list
     :param required_fields: fields required for POST requests
-    :type: dict
+    :type required_fields: dict
     """
     if not isinstance(template_data, list):
         return
@@ -109,15 +109,15 @@ def make_dict_layer_resource(
     make_resources_per_layer to continue generating resources
 
     :param template_data: data to convert into resources
-    :type: dict
+    :type template_data: dict
     :param data: full data dictonary
-    :type: dict
+    :type data: dict
     :param resources: list of resources to append to
-    :type: list
+    :type resources: list
     :param key_chain: chain of keys so far to form url path for resource
-    :type: list
+    :type key_chain: list
     :param required_fields: fields required for POST requests
-    :type: dict
+    :type required_fields: dict
     """
     if not isinstance(template_data, dict):
         return
@@ -157,7 +157,7 @@ def _copy_keys_from_template(template_data):
     """copies top-level keys and types from a template into a new dictionary
 
     :param template_data: partial of full api template data dictionary
-    :type: dict
+    :type template_data: dict
 
     :return: a new dictionary
     :rtype: dict
@@ -175,7 +175,7 @@ def _get_url(key_chain):
     """creates an appropriate resource url from keys traversed in the template
 
     :param key_chain: list of keys traversed so far
-    :type: list
+    :type key_chain: list
 
     :return: a resource url
     :rtype: str
@@ -188,7 +188,7 @@ def _get_value_ref(value):
     past key words like "<id>"
 
     :param value: value at some key in a dictionary
-    :type: any
+    :type value: any
 
     :return: a reference to a value in a dictionary
     :rtype: any
@@ -204,9 +204,9 @@ def _get_parser(*, template_data, required_fields=[]):
     """get parser for PUT or POST operation
 
     :param template_data: partial api template data dictionary
-    :type: dict
+    :type template_data: dict
     :parm required_fields: a list of fields required for post operations
-    :type: list
+    :type required_fields: list
 
     :return: a parser for PUT or POST requests
     :rtype: reqparse.RequestParser
@@ -235,15 +235,15 @@ def _make_list_resource(*, data, key_chain, url, put_parser, post_parser):
     creates restful resource based on a list element in the template
 
     :param data: dictonary of data for the api
-    :type: dict
+    :type data: dict
     :param key_chain: chain of keys so far to form url path for resource
-    :type: list
+    :type key_chain: list
     :param url: path to the resulting resource
-    :type: str
+    :type url: str
     :param put_parser: parser for the payload of a PUT request
-    :type: reqparse.RequestParser
+    :type put_parser: reqparse.RequestParser
     :param post_parser: parser for the payload of a POST request
-    :type: reqparse.RequestParser
+    :type post_parser: reqparse.RequestParser
 
     :return: class definition for the generated resource
     :rtype: type
@@ -286,13 +286,13 @@ def _make_outer_dict_resource(*, data, key_chain, url, post_parser):
     """creates restful resource based on an intter dictionary element in the template
 
     :param data: dictonary of data for the api
-    :type: dict
+    :type data: dict
     :param key_chain: chain of keys so far to form url path for resource
-    :type: list
+    :type key_chain: list
     :param url: path to the resulting resource
-    :type: str
+    :type url: str
     :param post_parser: parser for the payload of a POST request
-    :type: reqparse.RequestParser
+    :type post_parser: reqparse.RequestParser
 
     :return: class definition for the generated resource
     :rtype: type
@@ -323,13 +323,13 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
     """creates restful resource based on outermost dictionary element in the template
 
     :param data: dictonary of data for the api
-    :type: dict
+    :type data: dict
     :param key_chain: chain of keys so far to form url path for resource
-    :type: list
+    :type key_chain: list
     :param url: path to the resulting resource
-    :type: str
+    :type url: str
     :param put_parser: parser for the payload of a PUT request
-    :type: reqparse.RequestParser
+    :type put_parser: reqparse.RequestParser
 
     :return: class definition for the generated resource
     :rtype: type
@@ -377,11 +377,11 @@ def _traverse_key_chain(*, id, key_chain, data):
     """index into data along keys in key chain
 
     :param id: numerical identifier within data
-    :type: str
+    :type id: str
     :param key_chain: chain of keys to be traversed
-    :type: list
+    :type key_chain: list
     :param data: data for the api
-    :type: dict
+    :type param: dict
 
     :return: the value in data at the end of key_chain
     :rtype: any
