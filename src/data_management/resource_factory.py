@@ -88,10 +88,8 @@ def make_list_layer_resource(
         return
 
     url = _get_url(key_chain)
-    
-    parser = _get_parser(
-        template_data=template_data, required_fields=required_fields
-    )
+
+    parser = _get_parser(template_data=template_data, required_fields=required_fields)
 
     new_resource = _make_list_resource(
         data=data,
@@ -250,6 +248,7 @@ def _make_list_resource(*, data, key_chain, url, put_parser, post_parser):
     :return: class definition for the generated resource
     :rtype: type
     """
+
     class ListResource(Resource):
         def get(self, **kwargs):
             id = kwargs["id"]
@@ -257,8 +256,10 @@ def _make_list_resource(*, data, key_chain, url, put_parser, post_parser):
 
         def delete(self, **kwargs):
             """clear the list"""
-            id = kwargs["id"]
-            # local_data = _traverse_key_chain(id=id, key_chain=key_chain[:-1], data=data)
+            # id = kwargs["id"]
+            # local_data = _traverse_key_chain(
+            #     id=id, key_chain=key_chain[:-1], data=data
+            # )
             # key = id if key_chain[-1] == "<id>" else key_chain[-1]
             # abort_if_does_not_exist(key, local_data)
 
@@ -296,6 +297,7 @@ def _make_outer_dict_resource(*, data, key_chain, url, post_parser):
     :return: class definition for the generated resource
     :rtype: type
     """
+
     class OuterResource(Resource):
         def get(self):
             return data
@@ -332,6 +334,7 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
     :return: class definition for the generated resource
     :rtype: type
     """
+
     class InnerResource(Resource):
         def get(self, **kwargs):
             id = kwargs["id"]
@@ -349,10 +352,12 @@ def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
         def put(self, **kwargs):
             id = kwargs["id"]
             local_data = _traverse_key_chain(id=id, key_chain=key_chain, data=data)
-            
+
             # temporary fix until above post generates nested lists
             if not isinstance(local_data, dict):
-                layer_above = _traverse_key_chain(id=id, key_chain=key_chain[:-1], data=data)
+                layer_above = _traverse_key_chain(
+                    id=id, key_chain=key_chain[:-1], data=data
+                )
                 layer_above[key_chain[-1]] = {}
                 local_data = layer_above[key_chain[-1]]
 
