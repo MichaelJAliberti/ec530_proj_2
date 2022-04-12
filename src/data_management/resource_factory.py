@@ -233,6 +233,23 @@ def _get_parser(*, template_data, required_fields=[]):
 
 
 def _make_list_resource(*, data, key_chain, url, put_parser, post_parser):
+    """INCOMPLETE FUNCTION
+    creates restful resource based on a list element in the template
+
+    :param data: dictonary of data for the api
+    :type: dict
+    :param key_chain: chain of keys so far to form url path for resource
+    :type: list
+    :param url: path to the resulting resource
+    :type: str
+    :param put_parser: parser for the payload of a PUT request
+    :type: reqparse.RequestParser
+    :param post_parser: parser for the payload of a POST request
+    :type: reqparse.RequestParser
+
+    :return: class definition for the generated resource
+    :rtype: type
+    """
     class ListResource(Resource):
         def get(self, **kwargs):
             id = kwargs["id"]
@@ -265,6 +282,20 @@ def _make_list_resource(*, data, key_chain, url, put_parser, post_parser):
 
 
 def _make_outer_dict_resource(*, data, key_chain, url, post_parser):
+    """creates restful resource based on an intter dictionary element in the template
+
+    :param data: dictonary of data for the api
+    :type: dict
+    :param key_chain: chain of keys so far to form url path for resource
+    :type: list
+    :param url: path to the resulting resource
+    :type: str
+    :param post_parser: parser for the payload of a POST request
+    :type: reqparse.RequestParser
+
+    :return: class definition for the generated resource
+    :rtype: type
+    """
     class OuterResource(Resource):
         def get(self):
             return data
@@ -287,6 +318,20 @@ def _make_outer_dict_resource(*, data, key_chain, url, post_parser):
 
 
 def _make_inner_dict_resource(*, data, key_chain, url, put_parser):
+    """creates restful resource based on outermost dictionary element in the template
+
+    :param data: dictonary of data for the api
+    :type: dict
+    :param key_chain: chain of keys so far to form url path for resource
+    :type: list
+    :param url: path to the resulting resource
+    :type: str
+    :param put_parser: parser for the payload of a PUT request
+    :type: reqparse.RequestParser
+
+    :return: class definition for the generated resource
+    :rtype: type
+    """
     class InnerResource(Resource):
         def get(self, **kwargs):
             id = kwargs["id"]
