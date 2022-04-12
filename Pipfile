@@ -8,8 +8,10 @@ flake8 = "*"
 black = "*"
 pytest = "*"
 datetime = "*"
-sphinx = "*"
+flask-restful = "*"
+gunicorn = "*"
 sphinx-rtd-theme = "*"
+sphinx = "*"
 
 [dev-packages]
 
