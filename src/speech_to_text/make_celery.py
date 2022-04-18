@@ -20,8 +20,8 @@ def make_celery(*args):
     else:
         celery = Celery(
             "tasks",
-            broker='amqp://localhost',
-            backend='rpc://localhost'
+            broker='amqp://user:password@localhost/vhost',
+            backend='amqp://'
         )
 
     return celery

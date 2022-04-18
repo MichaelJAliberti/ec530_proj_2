@@ -10,6 +10,18 @@ If a branch includes modifications to code in the `/src` directory, these change
 
 ---
 
+## Queuing System
+
+All of the work for the task queuing system may be found under `src/speech_to_text`.
+
+Celery and Rabbitmq are used as the the python library and broker, respectively, with and `rpc` backend to store task results.
+
+Unfortunately, despite attempting to follow multiple tutorials, Celery workers were never able to finish tasks despite receiving them. This likely has to do with attempting to run Celery and Rabbitmq on a Windows System rather than on  Mac or Linux.
+
+Ultimately, I felt it wise to turn to  the Final project due to time constrtaints, leaving this queuing system unfinished.
+
+---
+
 ## API Schema
 
 ### `/chats`:

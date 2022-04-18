@@ -17,7 +17,7 @@ app = make_celery()
 
 @app.task
 def process(x):
-    return x * 2
+    return x + 2
 
 # @flask_app.route("/test")
 # def hello_world(x=16):
